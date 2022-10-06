@@ -1,7 +1,7 @@
 ﻿
 namespace Com_Parser_2
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -29,187 +29,200 @@ namespace Com_Parser_2
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.serialSettingsGroup = new System.Windows.Forms.GroupBox();
+            this.serialRxCount = new System.Windows.Forms.Label();
+            this.serialRxCountLabel = new System.Windows.Forms.Label();
+            this.serialStatus = new System.Windows.Forms.Label();
+            this.connectToSerial = new System.Windows.Forms.Button();
+            this.serialSpeedsList = new System.Windows.Forms.ComboBox();
+            this.serialNamesList = new System.Windows.Forms.ComboBox();
+            this.serialDataGroup = new System.Windows.Forms.GroupBox();
+            this.delimiterLabel = new System.Windows.Forms.Label();
+            this.saveDelimiterValue = new System.Windows.Forms.Button();
+            this.delimiterValue = new System.Windows.Forms.TextBox();
+            this.statusGroup = new System.Windows.Forms.GroupBox();
+            this.status = new System.Windows.Forms.Label();
+            this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.последовательныеПортыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.обновитьF5ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.раширенныеНастройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.графикF1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
+            this.serialDataArea = new System.Windows.Forms.RichTextBox();
+            this.serialSettingsGroup.SuspendLayout();
+            this.serialDataGroup.SuspendLayout();
+            this.statusGroup.SuspendLayout();
+            this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
-            // groupBox1
+            // serialSettingsGroup
             // 
-            this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.button1);
-            this.groupBox1.Controls.Add(this.comboBox2);
-            this.groupBox1.Controls.Add(this.comboBox1);
-            this.groupBox1.Location = new System.Drawing.Point(12, 27);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(456, 52);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Настройки последовательного порта";
+            this.serialSettingsGroup.Controls.Add(this.serialRxCount);
+            this.serialSettingsGroup.Controls.Add(this.serialRxCountLabel);
+            this.serialSettingsGroup.Controls.Add(this.serialStatus);
+            this.serialSettingsGroup.Controls.Add(this.connectToSerial);
+            this.serialSettingsGroup.Controls.Add(this.serialSpeedsList);
+            this.serialSettingsGroup.Controls.Add(this.serialNamesList);
+            this.serialSettingsGroup.Location = new System.Drawing.Point(12, 27);
+            this.serialSettingsGroup.Name = "serialSettingsGroup";
+            this.serialSettingsGroup.Size = new System.Drawing.Size(456, 52);
+            this.serialSettingsGroup.TabIndex = 0;
+            this.serialSettingsGroup.TabStop = false;
+            this.serialSettingsGroup.Text = "Настройки последовательного порта";
             // 
-            // label3
+            // serialRxCount
             // 
-            this.label3.AutoSize = true;
-            this.label3.ForeColor = System.Drawing.Color.Green;
-            this.label3.Location = new System.Drawing.Point(374, 23);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(13, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "0";
+            this.serialRxCount.AutoSize = true;
+            this.serialRxCount.ForeColor = System.Drawing.Color.Green;
+            this.serialRxCount.Location = new System.Drawing.Point(374, 23);
+            this.serialRxCount.Name = "serialRxCount";
+            this.serialRxCount.Size = new System.Drawing.Size(13, 13);
+            this.serialRxCount.TabIndex = 5;
+            this.serialRxCount.Text = "0";
             // 
-            // label2
+            // serialRxCountLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.ForeColor = System.Drawing.Color.Green;
-            this.label2.Location = new System.Drawing.Point(352, 23);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(25, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "RX:";
+            this.serialRxCountLabel.AutoSize = true;
+            this.serialRxCountLabel.ForeColor = System.Drawing.Color.Green;
+            this.serialRxCountLabel.Location = new System.Drawing.Point(352, 23);
+            this.serialRxCountLabel.Name = "serialRxCountLabel";
+            this.serialRxCountLabel.Size = new System.Drawing.Size(25, 13);
+            this.serialRxCountLabel.TabIndex = 4;
+            this.serialRxCountLabel.Text = "RX:";
             // 
-            // label1
+            // serialStatus
             // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.Green;
-            this.label1.Location = new System.Drawing.Point(269, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(63, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Отключено";
+            this.serialStatus.AutoSize = true;
+            this.serialStatus.ForeColor = System.Drawing.Color.Red;
+            this.serialStatus.Location = new System.Drawing.Point(269, 22);
+            this.serialStatus.Name = "serialStatus";
+            this.serialStatus.Size = new System.Drawing.Size(63, 13);
+            this.serialStatus.TabIndex = 3;
+            this.serialStatus.Text = "Отключено";
             // 
-            // button1
+            // connectToSerial
             // 
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(170, 18);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Подкл.";
-            this.button1.UseVisualStyleBackColor = true;
+            this.connectToSerial.Location = new System.Drawing.Point(170, 18);
+            this.connectToSerial.Name = "connectToSerial";
+            this.connectToSerial.Size = new System.Drawing.Size(75, 23);
+            this.connectToSerial.TabIndex = 2;
+            this.connectToSerial.Text = "Подкл.";
+            this.connectToSerial.UseVisualStyleBackColor = true;
+            this.connectToSerial.Click += new System.EventHandler(this.connectToSerial_Click);
             // 
-            // comboBox2
+            // serialSpeedsList
             // 
-            this.comboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(88, 19);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(76, 21);
-            this.comboBox2.TabIndex = 1;
+            this.serialSpeedsList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.serialSpeedsList.FormattingEnabled = true;
+            this.serialSpeedsList.Location = new System.Drawing.Point(88, 19);
+            this.serialSpeedsList.Name = "serialSpeedsList";
+            this.serialSpeedsList.Size = new System.Drawing.Size(76, 21);
+            this.serialSpeedsList.TabIndex = 1;
             // 
-            // comboBox1
+            // serialNamesList
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(6, 19);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(76, 21);
-            this.comboBox1.TabIndex = 0;
+            this.serialNamesList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.serialNamesList.FormattingEnabled = true;
+            this.serialNamesList.Location = new System.Drawing.Point(6, 19);
+            this.serialNamesList.Name = "serialNamesList";
+            this.serialNamesList.Size = new System.Drawing.Size(76, 21);
+            this.serialNamesList.TabIndex = 0;
             // 
-            // groupBox2
+            // serialDataGroup
             // 
-            this.groupBox2.Controls.Add(this.label4);
-            this.groupBox2.Controls.Add(this.button3);
-            this.groupBox2.Controls.Add(this.textBox1);
-            this.groupBox2.Location = new System.Drawing.Point(12, 85);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(456, 58);
-            this.groupBox2.TabIndex = 1;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Импорт данных";
+            this.serialDataGroup.Controls.Add(this.delimiterLabel);
+            this.serialDataGroup.Controls.Add(this.saveDelimiterValue);
+            this.serialDataGroup.Controls.Add(this.delimiterValue);
+            this.serialDataGroup.Location = new System.Drawing.Point(12, 85);
+            this.serialDataGroup.Name = "serialDataGroup";
+            this.serialDataGroup.Size = new System.Drawing.Size(456, 58);
+            this.serialDataGroup.TabIndex = 1;
+            this.serialDataGroup.TabStop = false;
+            this.serialDataGroup.Text = "Импорт данных";
             // 
-            // label4
+            // delimiterLabel
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 22);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(73, 13);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "Разделитель";
+            this.delimiterLabel.AutoSize = true;
+            this.delimiterLabel.Location = new System.Drawing.Point(9, 22);
+            this.delimiterLabel.Name = "delimiterLabel";
+            this.delimiterLabel.Size = new System.Drawing.Size(73, 13);
+            this.delimiterLabel.TabIndex = 3;
+            this.delimiterLabel.Text = "Разделитель";
             // 
-            // button3
+            // saveDelimiterValue
             // 
-            this.button3.Enabled = false;
-            this.button3.Location = new System.Drawing.Point(257, 17);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "Сохранить";
-            this.button3.UseVisualStyleBackColor = true;
+            this.saveDelimiterValue.Enabled = false;
+            this.saveDelimiterValue.Location = new System.Drawing.Point(257, 17);
+            this.saveDelimiterValue.Name = "saveDelimiterValue";
+            this.saveDelimiterValue.Size = new System.Drawing.Size(75, 23);
+            this.saveDelimiterValue.TabIndex = 2;
+            this.saveDelimiterValue.Text = "Сохранить";
+            this.saveDelimiterValue.UseVisualStyleBackColor = true;
             // 
-            // textBox1
+            // delimiterValue
             // 
-            this.textBox1.Location = new System.Drawing.Point(88, 19);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(157, 20);
-            this.textBox1.TabIndex = 0;
+            this.delimiterValue.Location = new System.Drawing.Point(88, 19);
+            this.delimiterValue.Name = "delimiterValue";
+            this.delimiterValue.Size = new System.Drawing.Size(157, 20);
+            this.delimiterValue.TabIndex = 0;
             // 
-            // groupBox3
+            // statusGroup
             // 
-            this.groupBox3.Controls.Add(this.label5);
-            this.groupBox3.Location = new System.Drawing.Point(12, 215);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(456, 82);
-            this.groupBox3.TabIndex = 2;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Статус";
+            this.statusGroup.AutoSize = true;
+            this.statusGroup.Controls.Add(this.serialDataArea);
+            this.statusGroup.Controls.Add(this.status);
+            this.statusGroup.Location = new System.Drawing.Point(12, 215);
+            this.statusGroup.Name = "statusGroup";
+            this.statusGroup.Size = new System.Drawing.Size(482, 266);
+            this.statusGroup.TabIndex = 2;
+            this.statusGroup.TabStop = false;
+            this.statusGroup.Text = "Статус";
             // 
-            // label5
+            // status
             // 
-            this.label5.AutoSize = true;
-            this.label5.ForeColor = System.Drawing.Color.Green;
-            this.label5.Location = new System.Drawing.Point(7, 20);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(67, 13);
-            this.label5.TabIndex = 0;
-            this.label5.Text = "Нет ошибок";
+            this.status.AutoSize = true;
+            this.status.ForeColor = System.Drawing.Color.Green;
+            this.status.Location = new System.Drawing.Point(7, 20);
+            this.status.Name = "status";
+            this.status.Size = new System.Drawing.Size(67, 13);
+            this.status.TabIndex = 0;
+            this.status.Text = "Нет ошибок";
             // 
-            // menuStrip1
+            // menuStrip
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.последовательныеПортыToolStripMenuItem,
             this.видToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(480, 24);
-            this.menuStrip1.TabIndex = 3;
-            this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip.Name = "menuStrip";
+            this.menuStrip.Size = new System.Drawing.Size(494, 24);
+            this.menuStrip.TabIndex = 3;
+            this.menuStrip.Text = "menuStrip1";
             // 
             // последовательныеПортыToolStripMenuItem
             // 
             this.последовательныеПортыToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.обновитьF5ToolStripMenuItem});
+            this.обновитьF5ToolStripMenuItem,
+            this.раширенныеНастройкиToolStripMenuItem});
             this.последовательныеПортыToolStripMenuItem.Name = "последовательныеПортыToolStripMenuItem";
+            this.последовательныеПортыToolStripMenuItem.ShortcutKeyDisplayString = "";
             this.последовательныеПортыToolStripMenuItem.Size = new System.Drawing.Size(163, 20);
             this.последовательныеПортыToolStripMenuItem.Text = "Последовательные порты";
             // 
             // обновитьF5ToolStripMenuItem
             // 
             this.обновитьF5ToolStripMenuItem.Name = "обновитьF5ToolStripMenuItem";
-            this.обновитьF5ToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-            this.обновитьF5ToolStripMenuItem.Text = "Обновить - F5";
+            this.обновитьF5ToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.обновитьF5ToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.обновитьF5ToolStripMenuItem.Text = "Обновить";
+            this.обновитьF5ToolStripMenuItem.Click += new System.EventHandler(this.обновитьF5ToolStripMenuItem_Click);
+            // 
+            // раширенныеНастройкиToolStripMenuItem
+            // 
+            this.раширенныеНастройкиToolStripMenuItem.Name = "раширенныеНастройкиToolStripMenuItem";
+            this.раширенныеНастройкиToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.раширенныеНастройкиToolStripMenuItem.Text = "Раширенные настройки";
+            this.раширенныеНастройкиToolStripMenuItem.Click += new System.EventHandler(this.раширенныеНастройкиToolStripMenuItem_Click);
             // 
             // видToolStripMenuItem
             // 
@@ -222,30 +235,43 @@ namespace Com_Parser_2
             // графикF1ToolStripMenuItem
             // 
             this.графикF1ToolStripMenuItem.Name = "графикF1ToolStripMenuItem";
-            this.графикF1ToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.графикF1ToolStripMenuItem.Text = "График - F1";
+            this.графикF1ToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.графикF1ToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.графикF1ToolStripMenuItem.Text = "График";
             // 
-            // Form1
+            // serialDataArea
+            // 
+            this.serialDataArea.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.serialDataArea.Location = new System.Drawing.Point(6, 76);
+            this.serialDataArea.Name = "serialDataArea";
+            this.serialDataArea.ReadOnly = true;
+            this.serialDataArea.Size = new System.Drawing.Size(432, 171);
+            this.serialDataArea.TabIndex = 1;
+            this.serialDataArea.Text = "";
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(480, 309);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.menuStrip1);
-            this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Controls.Add(this.statusGroup);
+            this.Controls.Add(this.serialDataGroup);
+            this.Controls.Add(this.serialSettingsGroup);
+            this.Controls.Add(this.menuStrip);
+            this.KeyPreview = true;
+            this.Name = "MainForm";
             this.Text = "Com-Parser-2";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
+            this.serialSettingsGroup.ResumeLayout(false);
+            this.serialSettingsGroup.PerformLayout();
+            this.serialDataGroup.ResumeLayout(false);
+            this.serialDataGroup.PerformLayout();
+            this.statusGroup.ResumeLayout(false);
+            this.statusGroup.PerformLayout();
+            this.menuStrip.ResumeLayout(false);
+            this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -253,25 +279,26 @@ namespace Com_Parser_2
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ComboBox comboBox2;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.GroupBox serialSettingsGroup;
+        private System.Windows.Forms.Label serialStatus;
+        private System.Windows.Forms.Button connectToSerial;
+        private System.Windows.Forms.ComboBox serialSpeedsList;
+        private System.Windows.Forms.ComboBox serialNamesList;
+        private System.Windows.Forms.GroupBox serialDataGroup;
+        private System.Windows.Forms.Button saveDelimiterValue;
+        private System.Windows.Forms.TextBox delimiterValue;
+        private System.Windows.Forms.GroupBox statusGroup;
+        private System.Windows.Forms.Label serialRxCount;
+        private System.Windows.Forms.Label serialRxCountLabel;
+        private System.Windows.Forms.Label delimiterLabel;
+        private System.Windows.Forms.Label status;
+        private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem последовательныеПортыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem обновитьF5ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem графикF1ToolStripMenuItem;
-        private System.IO.Ports.SerialPort serialPort1;
+        private System.Windows.Forms.ToolStripMenuItem раширенныеНастройкиToolStripMenuItem;
+        private System.Windows.Forms.RichTextBox serialDataArea;
     }
 }
 
