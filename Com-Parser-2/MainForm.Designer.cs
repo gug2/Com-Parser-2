@@ -29,6 +29,7 @@ namespace Com_Parser_2
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.serialSettingsGroup = new System.Windows.Forms.GroupBox();
             this.serialRxCount = new System.Windows.Forms.Label();
             this.serialRxCountLabel = new System.Windows.Forms.Label();
@@ -48,11 +49,18 @@ namespace Com_Parser_2
             this.раширенныеНастройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.графикF1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.messagesPerSecondLabel = new System.Windows.Forms.Label();
+            this.messagesPerSecond = new System.Windows.Forms.Label();
+            this.messagesPerSecondTimer = new System.Windows.Forms.Timer(this.components);
             this.serialDataArea = new System.Windows.Forms.RichTextBox();
+            this.serialOutGroup = new System.Windows.Forms.GroupBox();
+            this.ConnectedClients = new System.Windows.Forms.CheckedListBox();
+            this.serialHexMode = new System.Windows.Forms.CheckBox();
             this.serialSettingsGroup.SuspendLayout();
             this.serialDataGroup.SuspendLayout();
             this.statusGroup.SuspendLayout();
             this.menuStrip.SuspendLayout();
+            this.serialOutGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // serialSettingsGroup
@@ -169,11 +177,10 @@ namespace Com_Parser_2
             // statusGroup
             // 
             this.statusGroup.AutoSize = true;
-            this.statusGroup.Controls.Add(this.serialDataArea);
             this.statusGroup.Controls.Add(this.status);
             this.statusGroup.Location = new System.Drawing.Point(12, 215);
             this.statusGroup.Name = "statusGroup";
-            this.statusGroup.Size = new System.Drawing.Size(482, 266);
+            this.statusGroup.Size = new System.Drawing.Size(456, 49);
             this.statusGroup.TabIndex = 2;
             this.statusGroup.TabStop = false;
             this.statusGroup.Text = "Статус";
@@ -195,7 +202,7 @@ namespace Com_Parser_2
             this.видToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(494, 24);
+            this.menuStrip.Size = new System.Drawing.Size(514, 24);
             this.menuStrip.TabIndex = 3;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -228,6 +235,7 @@ namespace Com_Parser_2
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.графикF1ToolStripMenuItem});
+            this.видToolStripMenuItem.Enabled = false;
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -239,22 +247,80 @@ namespace Com_Parser_2
             this.графикF1ToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
             this.графикF1ToolStripMenuItem.Text = "График";
             // 
+            // messagesPerSecondLabel
+            // 
+            this.messagesPerSecondLabel.AutoSize = true;
+            this.messagesPerSecondLabel.Location = new System.Drawing.Point(24, 170);
+            this.messagesPerSecondLabel.Name = "messagesPerSecondLabel";
+            this.messagesPerSecondLabel.Size = new System.Drawing.Size(76, 13);
+            this.messagesPerSecondLabel.TabIndex = 4;
+            this.messagesPerSecondLabel.Text = "messages/sec";
+            // 
+            // messagesPerSecond
+            // 
+            this.messagesPerSecond.AutoSize = true;
+            this.messagesPerSecond.Location = new System.Drawing.Point(120, 170);
+            this.messagesPerSecond.Name = "messagesPerSecond";
+            this.messagesPerSecond.Size = new System.Drawing.Size(13, 13);
+            this.messagesPerSecond.TabIndex = 5;
+            this.messagesPerSecond.Text = "0";
+            // 
+            // messagesPerSecondTimer
+            // 
+            this.messagesPerSecondTimer.Interval = 1000;
+            this.messagesPerSecondTimer.Tick += new System.EventHandler(this.messagesPerSecondTimer_Tick);
+            // 
             // serialDataArea
             // 
-            this.serialDataArea.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.serialDataArea.Location = new System.Drawing.Point(6, 76);
+            this.serialDataArea.Location = new System.Drawing.Point(6, 142);
             this.serialDataArea.Name = "serialDataArea";
             this.serialDataArea.ReadOnly = true;
-            this.serialDataArea.Size = new System.Drawing.Size(432, 171);
-            this.serialDataArea.TabIndex = 1;
+            this.serialDataArea.Size = new System.Drawing.Size(450, 157);
+            this.serialDataArea.TabIndex = 0;
             this.serialDataArea.Text = "";
+            this.serialDataArea.WordWrap = false;
+            // 
+            // serialOutGroup
+            // 
+            this.serialOutGroup.AutoSize = true;
+            this.serialOutGroup.Controls.Add(this.ConnectedClients);
+            this.serialOutGroup.Controls.Add(this.serialHexMode);
+            this.serialOutGroup.Controls.Add(this.serialDataArea);
+            this.serialOutGroup.Location = new System.Drawing.Point(12, 271);
+            this.serialOutGroup.Name = "serialOutGroup";
+            this.serialOutGroup.Size = new System.Drawing.Size(462, 319);
+            this.serialOutGroup.TabIndex = 6;
+            this.serialOutGroup.TabStop = false;
+            this.serialOutGroup.Text = "Вывод";
+            // 
+            // ConnectedClients
+            // 
+            this.ConnectedClients.FormattingEnabled = true;
+            this.ConnectedClients.Location = new System.Drawing.Point(6, 42);
+            this.ConnectedClients.Name = "ConnectedClients";
+            this.ConnectedClients.Size = new System.Drawing.Size(450, 94);
+            this.ConnectedClients.TabIndex = 2;
+            // 
+            // serialHexMode
+            // 
+            this.serialHexMode.AutoSize = true;
+            this.serialHexMode.Enabled = false;
+            this.serialHexMode.Location = new System.Drawing.Point(6, 19);
+            this.serialHexMode.Name = "serialHexMode";
+            this.serialHexMode.Size = new System.Drawing.Size(82, 17);
+            this.serialHexMode.TabIndex = 1;
+            this.serialHexMode.Text = "Hex режим";
+            this.serialHexMode.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(480, 309);
+            this.ClientSize = new System.Drawing.Size(531, 326);
+            this.Controls.Add(this.serialOutGroup);
+            this.Controls.Add(this.messagesPerSecond);
+            this.Controls.Add(this.messagesPerSecondLabel);
             this.Controls.Add(this.statusGroup);
             this.Controls.Add(this.serialDataGroup);
             this.Controls.Add(this.serialSettingsGroup);
@@ -272,6 +338,8 @@ namespace Com_Parser_2
             this.statusGroup.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.serialOutGroup.ResumeLayout(false);
+            this.serialOutGroup.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -298,7 +366,13 @@ namespace Com_Parser_2
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem графикF1ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem раширенныеНастройкиToolStripMenuItem;
+        private System.Windows.Forms.Label messagesPerSecondLabel;
+        private System.Windows.Forms.Label messagesPerSecond;
+        private System.Windows.Forms.Timer messagesPerSecondTimer;
         private System.Windows.Forms.RichTextBox serialDataArea;
+        private System.Windows.Forms.GroupBox serialOutGroup;
+        private System.Windows.Forms.CheckBox serialHexMode;
+        private System.Windows.Forms.CheckedListBox ConnectedClients;
     }
 }
 

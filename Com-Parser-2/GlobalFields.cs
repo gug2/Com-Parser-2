@@ -1,12 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Ports;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Com_Parser_2
 {
     class GlobalFields
     {
         // длина пакета принимаемого сообщения
-        private static readonly int MESSAGE_SIZE = 60;
+        public static readonly int MESSAGE_SIZE = 60;
         // частота принимаемых сообщений
         private static readonly int MESSAGES_PER_SECOND = 4;
         // предполагаемый запас для буффера в секундах
@@ -20,8 +22,10 @@ namespace Com_Parser_2
         public static readonly int[] serialSpeeds = { 75, 110, 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 };
 
         public delegate void SerialDataDisplayHandler(string data);
+        public delegate void MessagesPerSecondHandler(int messagesPerSecond);
 
-        public static GlobalFields get()
+
+        public static GlobalFields Get()
         {
             return instance;
         }
@@ -46,7 +50,7 @@ namespace Com_Parser_2
             return currentSerial;
         }
 
-        private ExtendedSerialSettingsForm extendedSerialSettingsForm = null;
+        public ExtendedSerialSettingsForm extendedSerialSettingsForm = new ExtendedSerialSettingsForm();
         private bool essfOpened = false;
 
         public void ShowExtendedSerialSettingsForm()
@@ -68,12 +72,12 @@ namespace Com_Parser_2
         
         public void SaveFormSettings(string file, FormSetting[] settings)
         {
-            using (StreamWriter w = new StreamWriter(file, false))
+            // сделать сериализацию объекта настройки
+            using (FileStream w = new FileStream(file, FileMode.OpenOrCreate))
             {
-                foreach (FormSetting setting in settings)
-                {
-                    w.WriteLine(setting.Name + " " + setting.Value);
-                }
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                
+                binaryFormatter.Serialize(w, settings);
             }
         }
 
@@ -84,52 +88,34 @@ namespace Com_Parser_2
                 return null;
             }
 
-            string[] readed = File.ReadAllLines(file);
+            // сделать десериализацию объекта настройки
+            object obj;
 
-            FormSetting[] result = new FormSetting[readed.Length];
-            int i = 0;
-
-            foreach (string line in readed)
+            using (FileStream r = new FileStream(file, FileMode.Open))
             {
-                string[] array = line.Split(' ');
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
 
-                if (array.Length == 2)
-                {
-                    result[i] = new FormSetting(array[0], array[1]);
-                }
-                else
-                {
-                    // Если ошибка чтения, оставляем значение пустым, оно будет по умолчанию
-                    result[i] = null;
-                }
-
-                i++;
+                obj = binaryFormatter.Deserialize(r);
             }
 
-            return result;
-        }
-
-        public int serialRxCount { set; get; }
-
-        private byte[] serialBuffer = new byte[SERIAL_BUFFER_SIZE];
-        private int serialBufferWriteIndex = 0;
-        private int serialBufferReadIndex = 0;
-
-        public void AddToSerialBuffer(byte value)
-        {
-            if (serialBufferWriteIndex >= serialBuffer.Length)
+            if (obj is FormSetting[] result)
             {
-                return;
+                return result;
             }
 
-            serialBuffer[serialBufferWriteIndex++] = value;
+            throw new Exception(String.Format("Ошибка десериализации объекта {0}!", obj));
         }
+
+        public int SerialRxCount { set; get; }
+        public bool EnableMeasure { set; get; }
+        public int MessagesPerSecondCounter { set; get; }
     }
 
-    class FormSetting
+    [Serializable]
+    public class FormSetting
     {
-        public string Name { get; set; }
-        public string Value { get; set; }
+        public string Name { get; private set; }
+        public string Value { get; private set; }
 
         public FormSetting(string fieldName, object fieldValue)
         {
