@@ -3,94 +3,74 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Linq;
 using System.IO;
+using System.Drawing;
 
 namespace Com_Parser_2
 {
     public partial class MainForm : Form
     {
-        private GlobalFields.SerialDataDisplayHandler serialDataDisplayHandler;
-
+        private const string LOGFILE_NAME = "log.bin";
+        private const int DEFAULT_PORT_SPEED = 9600;
+        //private GlobalFields.SerialDataDisplayHandler serialDataDisplayHandler;
         private FileStream LogStream;
+        private readonly SerialPortLogic portLogic = new SerialPortLogic();
+        private AsyncDataLogging asyncDataLogging;
 
         public MainForm()
         {
             InitializeComponent();
+            portLogic.Opened += PortLogic_Opened;
+            portLogic.Closed += PortLogic_Closed;
         }
 
-        private void UpdatePortNames()
+        private void MainForm_Load(object sender, EventArgs e)
         {
-            string[] portNames = new string[] { };
-            bool hasAvailableSerials = false;
+            //serialDataDisplayHandler = SerialDataDisplay;
 
-            try
-            {
-                portNames = SerialPort.GetPortNames();
+            PacketFormat.Test();
 
-                this.serialNamesList.DataSource = portNames;
-                hasAvailableSerials = portNames.Length > 0;   
-            }
-            catch (System.ComponentModel.Win32Exception ex)
-            {
-                Status.Error(this.status, ex.ToString());
-            }
+            SerialNames.DataSource = new string[] { "None" };
+            ScanPorts();
 
-            this.serialSpeedsList.Enabled = hasAvailableSerials;
+            SerialSpeeds.DataSource = GlobalFields.serialSpeeds.Select(elem => elem + " бод").ToArray();
+            SerialSpeeds.SelectedIndex = Array.FindIndex(GlobalFields.serialSpeeds, elem => elem == DEFAULT_PORT_SPEED);
+        }
 
-            if (!hasAvailableSerials)
+        private void PortLogic_Opened(object sender, EventArgs e)
+        {
+            UpdateSerialRxCount(0);
+            portLogic.Port.DataReceived += Port_DataReceived;
+
+            LogStream = File.Open(LOGFILE_NAME, FileMode.OpenOrCreate, FileAccess.Write);
+            asyncDataLogging = new AsyncDataLogging(LogStream);
+
+            if (!MessagesPerSecondTimer.Enabled)
             {
-                this.serialNamesList.DataSource = new string[] { "None" };
-                Status.Error(this.status, "Последовательные порты не найдены!");
-            }
-            else
-            {
-                Status.Info(this.status, "Найдено " + portNames.Length + " последовательных портов.");
+                MessagesPerSecondTimer.Start();
             }
         }
 
-        private void ConnectToSerial()
+        private void PortLogic_Closed(object sender, EventArgs e)
         {
-            if(GlobalFields.Get().IsCurrentSerialEmpty())
+            if (MessagesPerSecondTimer.Enabled)
             {
-                try
-                {
-                    SerialPort serial = new SerialPort(this.serialNamesList.SelectedItem.ToString(), Convert.ToInt32(GlobalFields.serialSpeeds[this.serialSpeedsList.SelectedIndex]), GlobalFields.Get().extendedSerialSettingsForm.getParity(), GlobalFields.Get().extendedSerialSettingsForm.getDataBits(), GlobalFields.Get().extendedSerialSettingsForm.getStopBit());
-                    GlobalFields.Get().SetCurrentSerial(serial);
-                    
-                    if (!GlobalFields.Get().IsCurrentSerialEmpty() && !GlobalFields.Get().GetCurrentSerial().IsOpen)
-                    {
-                        GlobalFields.Get().GetCurrentSerial().Open();
-                        Status.Info(this.status, "Порт " + GlobalFields.Get().GetCurrentSerial().PortName + " открыт!");
-
-                        UpdateSerialRxCount(0);
-                        GlobalFields.Get().GetCurrentSerial().DataReceived += new SerialDataReceivedEventHandler(this.SerialDataReceive);
-
-                        LogStream = File.Open("log.bin", FileMode.OpenOrCreate, FileAccess.Write);
-
-                        if (!this.messagesPerSecondTimer.Enabled)
-                        {
-                            this.messagesPerSecondTimer.Start();
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    GlobalFields.Get().ResetCurrentSerial();
-
-                    Status.Error(this.status, e.ToString());
-                    return;
-                }
+                MessagesPerSecondTimer.Stop();
             }
 
-            this.connectToSerial.Click -= new EventHandler(this.connectToSerial_Click);
-            this.connectToSerial.Click += new EventHandler(this.DisconnectFromSerial);
-            this.connectToSerial.Text = "Откл.";
+            portLogic.Port.DataReceived -= Port_DataReceived;
 
-            this.serialStatus.Text = "Подключено";
-            this.serialStatus.ForeColor = System.Drawing.Color.Green;
+            if (LogStream != null)
+            {
+                LogStream.Flush();
+                LogStream.Close();
+                LogStream.Dispose();
+            }
         }
 
-        private void SerialDataReceive(object sender, SerialDataReceivedEventArgs e)
+        private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            // обрабатывать искючения порта в случае закрытия/зависа порта
+
             SerialPort port = (SerialPort)sender;
 
             if (port.BytesToRead == 0) return;
@@ -99,8 +79,8 @@ namespace Com_Parser_2
 
             port.Read(b, 0, b.Length);
 
-            var asyncWrite = AsyncDataLogging.Write(LogStream, b);
-            var asyncFlush = AsyncDataLogging.Flush(LogStream);
+            var asyncWrite = asyncDataLogging.Write(b);
+            var asyncFlush = asyncDataLogging.Flush();
 
             /*byte[] bytes = new byte[GlobalFields.MESSAGE_SIZE];
 
@@ -125,31 +105,117 @@ namespace Com_Parser_2
             }
 
             string data = builder.ToString();*/
-            this.serialDataArea.Invoke(this.serialDataDisplayHandler, new object[] { null });
+            //this.serialDataArea.Invoke(this.serialDataDisplayHandler, new object[] { null });
         }
 
-        private void SerialDataDisplay(string data)
+        private void ScanPorts()
         {
-            this.serialDataArea.AppendText(data);
-            this.serialDataArea.ScrollToCaret();
-            UpdateSerialRxCount(GlobalFields.Get().SerialRxCount + 1);
-
-            if (GlobalFields.Get().EnableMeasure)
+            try
             {
-                GlobalFields.Get().MessagesPerSecondCounter += 1;
+                if (SerialPortLogic.ScanPorts(out string[] ports))
+                {
+                    SerialNames.DataSource = ports;
+                    SerialSpeeds.Enabled = ports.Length > 0;
+
+                    StatusLogging.Info(Status, String.Format("Найдено {0} последовательных портов.", ports.Length));
+                }
+                else
+                {
+                    StatusLogging.Error(Status, "Последовательные порты не найдены!");
+                }
+            }
+            catch (Exception e)
+            {
+                StatusLogging.Error(Status, e.ToString());
             }
         }
 
-        public void UpdateSerialRxCount(int value)
+        private void OpenPort(object sender, EventArgs args)
         {
-            if (GlobalFields.Get().SerialRxCount != value)
+            string name = SerialNames.SelectedItem.ToString();
+            int speed = GlobalFields.serialSpeeds[SerialSpeeds.SelectedIndex];
+            Parity parity = GlobalFields.Get().extendedSerialSettingsForm.getParity();
+            int dataBits = GlobalFields.Get().extendedSerialSettingsForm.getDataBits();
+            StopBits stopBit = GlobalFields.Get().extendedSerialSettingsForm.getStopBit();
+
+            portLogic.Port = new SerialPort(name, speed, parity, dataBits, stopBit);
+
+            try
             {
-                GlobalFields.Get().SerialRxCount = value;
-                this.serialRxCount.Text = GlobalFields.Get().SerialRxCount.ToString();
+                portLogic.Connect();
+                StatusLogging.Info(Status, String.Format("Порт {0} открыт.", portLogic.Port.PortName));
+
+                ConnectToSerial.Click -= OpenPort;
+                ConnectToSerial.Click += ClosePort;
+                ConnectToSerial.Text = "Откл.";
+
+                SerialStatus.Text = "Подключено";
+                SerialStatus.ForeColor = Color.Green;
+            }
+            catch (Exception e)
+            {
+                StatusLogging.Error(Status, e.ToString());
             }
         }
 
-        private void DisconnectFromSerial(object sender, EventArgs e)
+        private void ClosePort(object sender, EventArgs args)
+        {
+            try
+            {
+                portLogic.Disconnect();
+                StatusLogging.Info(Status, String.Format("Порт {0} закрыт.", portLogic.Port.PortName));
+
+                ConnectToSerial.Click -= ClosePort;
+                ConnectToSerial.Click += OpenPort;
+                ConnectToSerial.Text = "Подкл.";
+
+                SerialStatus.Text = "Отключено";
+                SerialStatus.ForeColor = Color.Red;
+            }
+            catch (Exception e)
+            {
+                StatusLogging.Error(Status, e.ToString());
+            }
+        }
+
+        /*private void ConnectToSerial()
+        {
+            if(GlobalFields.Get().IsCurrentSerialEmpty())
+            {
+                try
+                {
+                    SerialPort serial = new SerialPort(this.SerialNames.SelectedItem.ToString(), Convert.ToInt32(GlobalFields.serialSpeeds[this.SerialSpeeds.SelectedIndex]), GlobalFields.Get().extendedSerialSettingsForm.getParity(), GlobalFields.Get().extendedSerialSettingsForm.getDataBits(), GlobalFields.Get().extendedSerialSettingsForm.getStopBit());
+                    GlobalFields.Get().SetCurrentSerial(serial);
+                    
+                    if (!GlobalFields.Get().IsCurrentSerialEmpty() && !GlobalFields.Get().GetCurrentSerial().IsOpen)
+                    {
+                        GlobalFields.Get().GetCurrentSerial().Open();
+                        Com_Parser_2.Status.Info(this.Status, "Порт " + GlobalFields.Get().GetCurrentSerial().PortName + " открыт!");
+
+                        UpdateSerialRxCount(0);
+                        GlobalFields.Get().GetCurrentSerial()..DataReceived += new SerialDataReceivedEventHandler(this.SerialDataReceive);
+
+                        
+                    }
+                }
+                catch (Exception e)
+                {
+                    GlobalFields.Get().ResetCurrentSerial();
+
+                    Com_Parser_2.Status.Error(this.Status, e.ToString());
+                    return;
+                }
+            }
+
+            this.ConnectToSerial.Click -= new EventHandler(this.ConnectToSerial_Click);
+            this.ConnectToSerial.Click += new EventHandler(this.DisconnectFromSerial);
+            this.ConnectToSerial.Text = "Откл.";
+
+            this.SerialStatus.Text = "Подключено";
+            this.SerialStatus.ForeColor = System.Drawing.Color.Green;
+        }*/
+
+        /*private void DisconnectFromSerial(object sender, EventArgs e)
         {
             if (!GlobalFields.Get().IsCurrentSerialEmpty())
             {
@@ -171,66 +237,103 @@ namespace Com_Parser_2
                             LogStream.Dispose();
                         }
 
-                        Status.Info(this.status, "Порт " + GlobalFields.Get().GetCurrentSerial().PortName + " закрыт!");
+                        Com_Parser_2.Status.Info(this.Status, "Порт " + GlobalFields.Get().GetCurrentSerial().PortName + " закрыт!");
                         GlobalFields.Get().ResetCurrentSerial();
                     }
                 }
                 catch (Exception ex)
                 {
-                    Status.Error(this.status, ex.ToString());
+                    Com_Parser_2.Status.Error(this.Status, ex.ToString());
                     return;
                 }
             }
 
-            this.connectToSerial.Click -= new EventHandler(this.DisconnectFromSerial);
-            this.connectToSerial.Click += new EventHandler(this.connectToSerial_Click);
-            this.connectToSerial.Text = "Подкл.";
+            this.ConnectToSerial.Click -= new EventHandler(this.DisconnectFromSerial);
+            this.ConnectToSerial.Click += new EventHandler(this.connectToSerial_Click);
+            this.ConnectToSerial.Text = "Подкл.";
 
-            this.serialStatus.Text = "Отключено";
-            this.serialStatus.ForeColor = System.Drawing.Color.Red;
-        }
-        
-        private void MainForm_Load(object sender, EventArgs e)
+            this.SerialStatus.Text = "Отключено";
+            this.SerialStatus.ForeColor = System.Drawing.Color.Red;
+        }*/
+
+        /*private void SerialDataReceive(object sender, SerialDataReceivedEventArgs e)
         {
-            this.serialDataDisplayHandler = new GlobalFields.SerialDataDisplayHandler(this.SerialDataDisplay);
             
-            UpdatePortNames();
-            int defaultSerialSpeed = 9600;
+        }*/
 
-            this.serialSpeedsList.DataSource = GlobalFields.serialSpeeds.Select(value => value + " бод").ToArray();
-            this.serialSpeedsList.SelectedIndex = Array.FindIndex(GlobalFields.serialSpeeds, value => value == defaultSerialSpeed);
+        /*private void SerialDataDisplay(string data)
+        {
+            //this.serialDataArea.AppendText(data);
+            //this.serialDataArea.ScrollToCaret();
+            UpdateSerialRxCount(GlobalFields.Get().SerialRxCount + 1);
+
+            if (GlobalFields.Get().EnableMeasure)
+            {
+                GlobalFields.Get().MessagesPerSecondCounter += 1;
+            }
+        }*/
+
+        public void UpdateSerialRxCount(int value)
+        {
+            if (GlobalFields.Get().SerialRxCount != value)
+            {
+                GlobalFields.Get().SerialRxCount = value;
+                SerialRxCount.Text = GlobalFields.Get().SerialRxCount.ToString();
+            }
         }
 
-        private void обновитьF5ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UpdatePorts_TS_Click(object sender, EventArgs e)
         {
-            UpdatePortNames();
+            ScanPorts();
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F5)
             {
-                UpdatePortNames();
+                ScanPorts();
                 e.Handled = true;
             }
         }
 
-        private void connectToSerial_Click(object sender, EventArgs e)
+        private void ConnectToSerial_Click(object sender, EventArgs e)
         {
-            ConnectToSerial();
+            OpenPort(sender, e);
         }
 
-        private void раширенныеНастройкиToolStripMenuItem_Click(object sender, EventArgs e)
+        private void PortExtendedSettings_TS_Click(object sender, EventArgs e)
         {
             GlobalFields.Get().ShowExtendedSerialSettingsForm();
         }
 
-        private void messagesPerSecondTimer_Tick(object sender, EventArgs e)
+        private void ImportPacketFormat_TS_Click(object sender, EventArgs e)
         {
-            this.messagesPerSecond.Text = GlobalFields.Get().MessagesPerSecondCounter.ToString();
+            using (OpenFileDialog dialog = new OpenFileDialog()) {
+                dialog.Filter = "Скрипт формата пакета|*.cs";
+                dialog.Multiselect = false;
+                dialog.CheckFileExists = true;
+                dialog.CheckPathExists = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string name = Path.GetFileNameWithoutExtension(dialog.FileName);
+                    string directory = Path.GetDirectoryName(dialog.FileName);
+                    if (!string.IsNullOrEmpty(directory))
+                    {
+                        directory += '\\';
+                    }
+                    PacketFormat.AssemblyCode(dialog.FileName, directory + name + ".dll");
+                }
+            }
+        }
+
+        private void MessagesPerSecondTimer_Tick(object sender, EventArgs e)
+        {
+            MessagesPerSecond.Text = GlobalFields.Get().MessagesPerSecondCounter.ToString();
             GlobalFields.Get().MessagesPerSecondCounter = 0;
 
             GlobalFields.Get().EnableMeasure = !GlobalFields.Get().EnableMeasure;
         }
+
     }
 }

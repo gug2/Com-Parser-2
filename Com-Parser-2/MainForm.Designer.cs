@@ -30,349 +30,267 @@ namespace Com_Parser_2
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.serialSettingsGroup = new System.Windows.Forms.GroupBox();
-            this.serialRxCount = new System.Windows.Forms.Label();
-            this.serialRxCountLabel = new System.Windows.Forms.Label();
-            this.serialStatus = new System.Windows.Forms.Label();
-            this.connectToSerial = new System.Windows.Forms.Button();
-            this.serialSpeedsList = new System.Windows.Forms.ComboBox();
-            this.serialNamesList = new System.Windows.Forms.ComboBox();
-            this.serialDataGroup = new System.Windows.Forms.GroupBox();
-            this.delimiterLabel = new System.Windows.Forms.Label();
-            this.saveDelimiterValue = new System.Windows.Forms.Button();
-            this.delimiterValue = new System.Windows.Forms.TextBox();
-            this.statusGroup = new System.Windows.Forms.GroupBox();
-            this.status = new System.Windows.Forms.Label();
-            this.menuStrip = new System.Windows.Forms.MenuStrip();
-            this.последовательныеПортыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.обновитьF5ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.раширенныеНастройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.графикF1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.messagesPerSecondLabel = new System.Windows.Forms.Label();
-            this.messagesPerSecond = new System.Windows.Forms.Label();
-            this.messagesPerSecondTimer = new System.Windows.Forms.Timer(this.components);
-            this.serialDataArea = new System.Windows.Forms.RichTextBox();
+            System.Windows.Forms.GroupBox serialSettingsGroup;
+            System.Windows.Forms.Label SerialRxCountLabel;
+            System.Windows.Forms.ToolStripMenuItem SerialPort_TS_Group;
+            System.Windows.Forms.Label MessagesPerSecondLabel;
+            System.Windows.Forms.ToolStripMenuItem Data_TS_Group;
+            this.SerialRxCount = new System.Windows.Forms.Label();
+            this.SerialStatus = new System.Windows.Forms.Label();
+            this.ConnectToSerial = new System.Windows.Forms.Button();
+            this.SerialSpeeds = new System.Windows.Forms.ComboBox();
+            this.SerialNames = new System.Windows.Forms.ComboBox();
+            this.UpdatePorts_TS = new System.Windows.Forms.ToolStripMenuItem();
+            this.PortExtendedSettings_TS = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportPacketFormat_TS = new System.Windows.Forms.ToolStripMenuItem();
+            this.Status = new System.Windows.Forms.Label();
+            this.MenuStrip = new System.Windows.Forms.MenuStrip();
+            this.MessagesPerSecond = new System.Windows.Forms.Label();
+            this.MessagesPerSecondTimer = new System.Windows.Forms.Timer(this.components);
             this.serialOutGroup = new System.Windows.Forms.GroupBox();
             this.ConnectedClients = new System.Windows.Forms.CheckedListBox();
-            this.serialHexMode = new System.Windows.Forms.CheckBox();
-            this.serialSettingsGroup.SuspendLayout();
-            this.serialDataGroup.SuspendLayout();
-            this.statusGroup.SuspendLayout();
-            this.menuStrip.SuspendLayout();
+            this.StatusBar = new System.Windows.Forms.Panel();
+            serialSettingsGroup = new System.Windows.Forms.GroupBox();
+            SerialRxCountLabel = new System.Windows.Forms.Label();
+            SerialPort_TS_Group = new System.Windows.Forms.ToolStripMenuItem();
+            MessagesPerSecondLabel = new System.Windows.Forms.Label();
+            Data_TS_Group = new System.Windows.Forms.ToolStripMenuItem();
+            serialSettingsGroup.SuspendLayout();
+            this.MenuStrip.SuspendLayout();
             this.serialOutGroup.SuspendLayout();
+            this.StatusBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // serialSettingsGroup
             // 
-            this.serialSettingsGroup.Controls.Add(this.serialRxCount);
-            this.serialSettingsGroup.Controls.Add(this.serialRxCountLabel);
-            this.serialSettingsGroup.Controls.Add(this.serialStatus);
-            this.serialSettingsGroup.Controls.Add(this.connectToSerial);
-            this.serialSettingsGroup.Controls.Add(this.serialSpeedsList);
-            this.serialSettingsGroup.Controls.Add(this.serialNamesList);
-            this.serialSettingsGroup.Location = new System.Drawing.Point(12, 27);
-            this.serialSettingsGroup.Name = "serialSettingsGroup";
-            this.serialSettingsGroup.Size = new System.Drawing.Size(456, 52);
-            this.serialSettingsGroup.TabIndex = 0;
-            this.serialSettingsGroup.TabStop = false;
-            this.serialSettingsGroup.Text = "Настройки последовательного порта";
+            serialSettingsGroup.Controls.Add(this.SerialRxCount);
+            serialSettingsGroup.Controls.Add(SerialRxCountLabel);
+            serialSettingsGroup.Controls.Add(this.SerialStatus);
+            serialSettingsGroup.Controls.Add(this.ConnectToSerial);
+            serialSettingsGroup.Controls.Add(this.SerialSpeeds);
+            serialSettingsGroup.Controls.Add(this.SerialNames);
+            serialSettingsGroup.Location = new System.Drawing.Point(12, 27);
+            serialSettingsGroup.Name = "serialSettingsGroup";
+            serialSettingsGroup.Size = new System.Drawing.Size(456, 52);
+            serialSettingsGroup.TabIndex = 0;
+            serialSettingsGroup.TabStop = false;
+            serialSettingsGroup.Text = "Настройки последовательного порта";
             // 
-            // serialRxCount
+            // SerialRxCount
             // 
-            this.serialRxCount.AutoSize = true;
-            this.serialRxCount.ForeColor = System.Drawing.Color.Green;
-            this.serialRxCount.Location = new System.Drawing.Point(374, 23);
-            this.serialRxCount.Name = "serialRxCount";
-            this.serialRxCount.Size = new System.Drawing.Size(13, 13);
-            this.serialRxCount.TabIndex = 5;
-            this.serialRxCount.Text = "0";
+            this.SerialRxCount.AutoSize = true;
+            this.SerialRxCount.ForeColor = System.Drawing.Color.Green;
+            this.SerialRxCount.Location = new System.Drawing.Point(374, 23);
+            this.SerialRxCount.Name = "SerialRxCount";
+            this.SerialRxCount.Size = new System.Drawing.Size(13, 13);
+            this.SerialRxCount.TabIndex = 5;
+            this.SerialRxCount.Text = "0";
             // 
-            // serialRxCountLabel
+            // SerialRxCountLabel
             // 
-            this.serialRxCountLabel.AutoSize = true;
-            this.serialRxCountLabel.ForeColor = System.Drawing.Color.Green;
-            this.serialRxCountLabel.Location = new System.Drawing.Point(352, 23);
-            this.serialRxCountLabel.Name = "serialRxCountLabel";
-            this.serialRxCountLabel.Size = new System.Drawing.Size(25, 13);
-            this.serialRxCountLabel.TabIndex = 4;
-            this.serialRxCountLabel.Text = "RX:";
+            SerialRxCountLabel.AutoSize = true;
+            SerialRxCountLabel.ForeColor = System.Drawing.Color.Green;
+            SerialRxCountLabel.Location = new System.Drawing.Point(352, 23);
+            SerialRxCountLabel.Name = "SerialRxCountLabel";
+            SerialRxCountLabel.Size = new System.Drawing.Size(25, 13);
+            SerialRxCountLabel.TabIndex = 4;
+            SerialRxCountLabel.Text = "RX:";
             // 
-            // serialStatus
+            // SerialStatus
             // 
-            this.serialStatus.AutoSize = true;
-            this.serialStatus.ForeColor = System.Drawing.Color.Red;
-            this.serialStatus.Location = new System.Drawing.Point(269, 22);
-            this.serialStatus.Name = "serialStatus";
-            this.serialStatus.Size = new System.Drawing.Size(63, 13);
-            this.serialStatus.TabIndex = 3;
-            this.serialStatus.Text = "Отключено";
+            this.SerialStatus.AutoSize = true;
+            this.SerialStatus.ForeColor = System.Drawing.Color.Red;
+            this.SerialStatus.Location = new System.Drawing.Point(269, 22);
+            this.SerialStatus.Name = "SerialStatus";
+            this.SerialStatus.Size = new System.Drawing.Size(63, 13);
+            this.SerialStatus.TabIndex = 3;
+            this.SerialStatus.Text = "Отключено";
             // 
-            // connectToSerial
+            // ConnectToSerial
             // 
-            this.connectToSerial.Location = new System.Drawing.Point(170, 18);
-            this.connectToSerial.Name = "connectToSerial";
-            this.connectToSerial.Size = new System.Drawing.Size(75, 23);
-            this.connectToSerial.TabIndex = 2;
-            this.connectToSerial.Text = "Подкл.";
-            this.connectToSerial.UseVisualStyleBackColor = true;
-            this.connectToSerial.Click += new System.EventHandler(this.connectToSerial_Click);
+            this.ConnectToSerial.Location = new System.Drawing.Point(170, 18);
+            this.ConnectToSerial.Name = "ConnectToSerial";
+            this.ConnectToSerial.Size = new System.Drawing.Size(75, 23);
+            this.ConnectToSerial.TabIndex = 2;
+            this.ConnectToSerial.Text = "Подкл.";
+            this.ConnectToSerial.UseVisualStyleBackColor = true;
+            this.ConnectToSerial.Click += new System.EventHandler(this.ConnectToSerial_Click);
             // 
-            // serialSpeedsList
+            // SerialSpeeds
             // 
-            this.serialSpeedsList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.serialSpeedsList.FormattingEnabled = true;
-            this.serialSpeedsList.Location = new System.Drawing.Point(88, 19);
-            this.serialSpeedsList.Name = "serialSpeedsList";
-            this.serialSpeedsList.Size = new System.Drawing.Size(76, 21);
-            this.serialSpeedsList.TabIndex = 1;
+            this.SerialSpeeds.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SerialSpeeds.FormattingEnabled = true;
+            this.SerialSpeeds.Location = new System.Drawing.Point(88, 19);
+            this.SerialSpeeds.Name = "SerialSpeeds";
+            this.SerialSpeeds.Size = new System.Drawing.Size(76, 21);
+            this.SerialSpeeds.TabIndex = 1;
             // 
-            // serialNamesList
+            // SerialNames
             // 
-            this.serialNamesList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.serialNamesList.FormattingEnabled = true;
-            this.serialNamesList.Location = new System.Drawing.Point(6, 19);
-            this.serialNamesList.Name = "serialNamesList";
-            this.serialNamesList.Size = new System.Drawing.Size(76, 21);
-            this.serialNamesList.TabIndex = 0;
+            this.SerialNames.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SerialNames.FormattingEnabled = true;
+            this.SerialNames.Location = new System.Drawing.Point(6, 19);
+            this.SerialNames.Name = "SerialNames";
+            this.SerialNames.Size = new System.Drawing.Size(76, 21);
+            this.SerialNames.TabIndex = 0;
             // 
-            // serialDataGroup
+            // SerialPort_TS_Group
             // 
-            this.serialDataGroup.Controls.Add(this.delimiterLabel);
-            this.serialDataGroup.Controls.Add(this.saveDelimiterValue);
-            this.serialDataGroup.Controls.Add(this.delimiterValue);
-            this.serialDataGroup.Location = new System.Drawing.Point(12, 85);
-            this.serialDataGroup.Name = "serialDataGroup";
-            this.serialDataGroup.Size = new System.Drawing.Size(456, 58);
-            this.serialDataGroup.TabIndex = 1;
-            this.serialDataGroup.TabStop = false;
-            this.serialDataGroup.Text = "Импорт данных";
+            SerialPort_TS_Group.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.UpdatePorts_TS,
+            this.PortExtendedSettings_TS});
+            SerialPort_TS_Group.Name = "SerialPort_TS_Group";
+            SerialPort_TS_Group.ShortcutKeyDisplayString = "";
+            SerialPort_TS_Group.Size = new System.Drawing.Size(163, 20);
+            SerialPort_TS_Group.Text = "Последовательные порты";
             // 
-            // delimiterLabel
+            // UpdatePorts_TS
             // 
-            this.delimiterLabel.AutoSize = true;
-            this.delimiterLabel.Location = new System.Drawing.Point(9, 22);
-            this.delimiterLabel.Name = "delimiterLabel";
-            this.delimiterLabel.Size = new System.Drawing.Size(73, 13);
-            this.delimiterLabel.TabIndex = 3;
-            this.delimiterLabel.Text = "Разделитель";
+            this.UpdatePorts_TS.Name = "UpdatePorts_TS";
+            this.UpdatePorts_TS.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.UpdatePorts_TS.Size = new System.Drawing.Size(208, 22);
+            this.UpdatePorts_TS.Text = "Обновить";
+            this.UpdatePorts_TS.Click += new System.EventHandler(this.UpdatePorts_TS_Click);
             // 
-            // saveDelimiterValue
+            // PortExtendedSettings_TS
             // 
-            this.saveDelimiterValue.Enabled = false;
-            this.saveDelimiterValue.Location = new System.Drawing.Point(257, 17);
-            this.saveDelimiterValue.Name = "saveDelimiterValue";
-            this.saveDelimiterValue.Size = new System.Drawing.Size(75, 23);
-            this.saveDelimiterValue.TabIndex = 2;
-            this.saveDelimiterValue.Text = "Сохранить";
-            this.saveDelimiterValue.UseVisualStyleBackColor = true;
+            this.PortExtendedSettings_TS.Name = "PortExtendedSettings_TS";
+            this.PortExtendedSettings_TS.Size = new System.Drawing.Size(208, 22);
+            this.PortExtendedSettings_TS.Text = "Раширенные настройки";
+            this.PortExtendedSettings_TS.Click += new System.EventHandler(this.PortExtendedSettings_TS_Click);
             // 
-            // delimiterValue
+            // MessagesPerSecondLabel
             // 
-            this.delimiterValue.Location = new System.Drawing.Point(88, 19);
-            this.delimiterValue.Name = "delimiterValue";
-            this.delimiterValue.Size = new System.Drawing.Size(157, 20);
-            this.delimiterValue.TabIndex = 0;
+            MessagesPerSecondLabel.AutoSize = true;
+            MessagesPerSecondLabel.Location = new System.Drawing.Point(8, 10);
+            MessagesPerSecondLabel.Name = "MessagesPerSecondLabel";
+            MessagesPerSecondLabel.Size = new System.Drawing.Size(76, 13);
+            MessagesPerSecondLabel.TabIndex = 4;
+            MessagesPerSecondLabel.Text = "messages/sec";
             // 
-            // statusGroup
+            // Data_TS_Group
             // 
-            this.statusGroup.AutoSize = true;
-            this.statusGroup.Controls.Add(this.status);
-            this.statusGroup.Location = new System.Drawing.Point(12, 215);
-            this.statusGroup.Name = "statusGroup";
-            this.statusGroup.Size = new System.Drawing.Size(456, 49);
-            this.statusGroup.TabIndex = 2;
-            this.statusGroup.TabStop = false;
-            this.statusGroup.Text = "Статус";
+            Data_TS_Group.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ImportPacketFormat_TS});
+            Data_TS_Group.Name = "Data_TS_Group";
+            Data_TS_Group.Size = new System.Drawing.Size(62, 20);
+            Data_TS_Group.Text = "Данные";
             // 
-            // status
+            // ImportPacketFormat_TS
             // 
-            this.status.AutoSize = true;
-            this.status.ForeColor = System.Drawing.Color.Green;
-            this.status.Location = new System.Drawing.Point(7, 20);
-            this.status.Name = "status";
-            this.status.Size = new System.Drawing.Size(67, 13);
-            this.status.TabIndex = 0;
-            this.status.Text = "Нет ошибок";
+            this.ImportPacketFormat_TS.Name = "ImportPacketFormat_TS";
+            this.ImportPacketFormat_TS.Size = new System.Drawing.Size(180, 22);
+            this.ImportPacketFormat_TS.Text = "Импорт формата";
+            this.ImportPacketFormat_TS.Click += new System.EventHandler(this.ImportPacketFormat_TS_Click);
             // 
-            // menuStrip
+            // Status
             // 
-            this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.последовательныеПортыToolStripMenuItem,
-            this.видToolStripMenuItem});
-            this.menuStrip.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(514, 24);
-            this.menuStrip.TabIndex = 3;
-            this.menuStrip.Text = "menuStrip1";
+            this.Status.AutoSize = true;
+            this.Status.ForeColor = System.Drawing.Color.Green;
+            this.Status.Location = new System.Drawing.Point(8, 32);
+            this.Status.Name = "Status";
+            this.Status.Size = new System.Drawing.Size(67, 13);
+            this.Status.TabIndex = 0;
+            this.Status.Text = "Нет ошибок";
             // 
-            // последовательныеПортыToolStripMenuItem
+            // MenuStrip
             // 
-            this.последовательныеПортыToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.обновитьF5ToolStripMenuItem,
-            this.раширенныеНастройкиToolStripMenuItem});
-            this.последовательныеПортыToolStripMenuItem.Name = "последовательныеПортыToolStripMenuItem";
-            this.последовательныеПортыToolStripMenuItem.ShortcutKeyDisplayString = "";
-            this.последовательныеПортыToolStripMenuItem.Size = new System.Drawing.Size(163, 20);
-            this.последовательныеПортыToolStripMenuItem.Text = "Последовательные порты";
+            this.MenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            SerialPort_TS_Group,
+            Data_TS_Group});
+            this.MenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.MenuStrip.Name = "MenuStrip";
+            this.MenuStrip.Size = new System.Drawing.Size(531, 24);
+            this.MenuStrip.TabIndex = 3;
+            this.MenuStrip.Text = "menuStrip1";
             // 
-            // обновитьF5ToolStripMenuItem
+            // MessagesPerSecond
             // 
-            this.обновитьF5ToolStripMenuItem.Name = "обновитьF5ToolStripMenuItem";
-            this.обновитьF5ToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.обновитьF5ToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.обновитьF5ToolStripMenuItem.Text = "Обновить";
-            this.обновитьF5ToolStripMenuItem.Click += new System.EventHandler(this.обновитьF5ToolStripMenuItem_Click);
+            this.MessagesPerSecond.AutoSize = true;
+            this.MessagesPerSecond.Location = new System.Drawing.Point(104, 10);
+            this.MessagesPerSecond.Name = "MessagesPerSecond";
+            this.MessagesPerSecond.Size = new System.Drawing.Size(13, 13);
+            this.MessagesPerSecond.TabIndex = 5;
+            this.MessagesPerSecond.Text = "0";
             // 
-            // раширенныеНастройкиToolStripMenuItem
+            // MessagesPerSecondTimer
             // 
-            this.раширенныеНастройкиToolStripMenuItem.Name = "раширенныеНастройкиToolStripMenuItem";
-            this.раширенныеНастройкиToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.раширенныеНастройкиToolStripMenuItem.Text = "Раширенные настройки";
-            this.раширенныеНастройкиToolStripMenuItem.Click += new System.EventHandler(this.раширенныеНастройкиToolStripMenuItem_Click);
-            // 
-            // видToolStripMenuItem
-            // 
-            this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.графикF1ToolStripMenuItem});
-            this.видToolStripMenuItem.Enabled = false;
-            this.видToolStripMenuItem.Name = "видToolStripMenuItem";
-            this.видToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
-            this.видToolStripMenuItem.Text = "Вид";
-            // 
-            // графикF1ToolStripMenuItem
-            // 
-            this.графикF1ToolStripMenuItem.Name = "графикF1ToolStripMenuItem";
-            this.графикF1ToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.графикF1ToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.графикF1ToolStripMenuItem.Text = "График";
-            // 
-            // messagesPerSecondLabel
-            // 
-            this.messagesPerSecondLabel.AutoSize = true;
-            this.messagesPerSecondLabel.Location = new System.Drawing.Point(24, 170);
-            this.messagesPerSecondLabel.Name = "messagesPerSecondLabel";
-            this.messagesPerSecondLabel.Size = new System.Drawing.Size(76, 13);
-            this.messagesPerSecondLabel.TabIndex = 4;
-            this.messagesPerSecondLabel.Text = "messages/sec";
-            // 
-            // messagesPerSecond
-            // 
-            this.messagesPerSecond.AutoSize = true;
-            this.messagesPerSecond.Location = new System.Drawing.Point(120, 170);
-            this.messagesPerSecond.Name = "messagesPerSecond";
-            this.messagesPerSecond.Size = new System.Drawing.Size(13, 13);
-            this.messagesPerSecond.TabIndex = 5;
-            this.messagesPerSecond.Text = "0";
-            // 
-            // messagesPerSecondTimer
-            // 
-            this.messagesPerSecondTimer.Interval = 1000;
-            this.messagesPerSecondTimer.Tick += new System.EventHandler(this.messagesPerSecondTimer_Tick);
-            // 
-            // serialDataArea
-            // 
-            this.serialDataArea.Location = new System.Drawing.Point(6, 142);
-            this.serialDataArea.Name = "serialDataArea";
-            this.serialDataArea.ReadOnly = true;
-            this.serialDataArea.Size = new System.Drawing.Size(450, 157);
-            this.serialDataArea.TabIndex = 0;
-            this.serialDataArea.Text = "";
-            this.serialDataArea.WordWrap = false;
+            this.MessagesPerSecondTimer.Interval = 1000;
+            this.MessagesPerSecondTimer.Tick += new System.EventHandler(this.MessagesPerSecondTimer_Tick);
             // 
             // serialOutGroup
             // 
             this.serialOutGroup.AutoSize = true;
             this.serialOutGroup.Controls.Add(this.ConnectedClients);
-            this.serialOutGroup.Controls.Add(this.serialHexMode);
-            this.serialOutGroup.Controls.Add(this.serialDataArea);
-            this.serialOutGroup.Location = new System.Drawing.Point(12, 271);
+            this.serialOutGroup.Location = new System.Drawing.Point(12, 85);
             this.serialOutGroup.Name = "serialOutGroup";
-            this.serialOutGroup.Size = new System.Drawing.Size(462, 319);
+            this.serialOutGroup.Size = new System.Drawing.Size(466, 102);
             this.serialOutGroup.TabIndex = 6;
             this.serialOutGroup.TabStop = false;
-            this.serialOutGroup.Text = "Вывод";
+            this.serialOutGroup.Text = "Подключенные узлы";
             // 
             // ConnectedClients
             // 
             this.ConnectedClients.FormattingEnabled = true;
-            this.ConnectedClients.Location = new System.Drawing.Point(6, 42);
+            this.ConnectedClients.Location = new System.Drawing.Point(10, 19);
             this.ConnectedClients.Name = "ConnectedClients";
-            this.ConnectedClients.Size = new System.Drawing.Size(450, 94);
+            this.ConnectedClients.Size = new System.Drawing.Size(450, 64);
             this.ConnectedClients.TabIndex = 2;
             // 
-            // serialHexMode
+            // StatusBar
             // 
-            this.serialHexMode.AutoSize = true;
-            this.serialHexMode.Enabled = false;
-            this.serialHexMode.Location = new System.Drawing.Point(6, 19);
-            this.serialHexMode.Name = "serialHexMode";
-            this.serialHexMode.Size = new System.Drawing.Size(82, 17);
-            this.serialHexMode.TabIndex = 1;
-            this.serialHexMode.Text = "Hex режим";
-            this.serialHexMode.UseVisualStyleBackColor = true;
+            this.StatusBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.StatusBar.Controls.Add(this.Status);
+            this.StatusBar.Controls.Add(MessagesPerSecondLabel);
+            this.StatusBar.Controls.Add(this.MessagesPerSecond);
+            this.StatusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.StatusBar.Location = new System.Drawing.Point(0, 271);
+            this.StatusBar.Name = "StatusBar";
+            this.StatusBar.Size = new System.Drawing.Size(531, 55);
+            this.StatusBar.TabIndex = 7;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(531, 326);
+            this.Controls.Add(this.StatusBar);
             this.Controls.Add(this.serialOutGroup);
-            this.Controls.Add(this.messagesPerSecond);
-            this.Controls.Add(this.messagesPerSecondLabel);
-            this.Controls.Add(this.statusGroup);
-            this.Controls.Add(this.serialDataGroup);
-            this.Controls.Add(this.serialSettingsGroup);
-            this.Controls.Add(this.menuStrip);
+            this.Controls.Add(serialSettingsGroup);
+            this.Controls.Add(this.MenuStrip);
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Com-Parser-2";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
-            this.serialSettingsGroup.ResumeLayout(false);
-            this.serialSettingsGroup.PerformLayout();
-            this.serialDataGroup.ResumeLayout(false);
-            this.serialDataGroup.PerformLayout();
-            this.statusGroup.ResumeLayout(false);
-            this.statusGroup.PerformLayout();
-            this.menuStrip.ResumeLayout(false);
-            this.menuStrip.PerformLayout();
+            serialSettingsGroup.ResumeLayout(false);
+            serialSettingsGroup.PerformLayout();
+            this.MenuStrip.ResumeLayout(false);
+            this.MenuStrip.PerformLayout();
             this.serialOutGroup.ResumeLayout(false);
-            this.serialOutGroup.PerformLayout();
+            this.StatusBar.ResumeLayout(false);
+            this.StatusBar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox serialSettingsGroup;
-        private System.Windows.Forms.Label serialStatus;
-        private System.Windows.Forms.Button connectToSerial;
-        private System.Windows.Forms.ComboBox serialSpeedsList;
-        private System.Windows.Forms.ComboBox serialNamesList;
-        private System.Windows.Forms.GroupBox serialDataGroup;
-        private System.Windows.Forms.Button saveDelimiterValue;
-        private System.Windows.Forms.TextBox delimiterValue;
-        private System.Windows.Forms.GroupBox statusGroup;
-        private System.Windows.Forms.Label serialRxCount;
-        private System.Windows.Forms.Label serialRxCountLabel;
-        private System.Windows.Forms.Label delimiterLabel;
-        private System.Windows.Forms.Label status;
-        private System.Windows.Forms.MenuStrip menuStrip;
-        private System.Windows.Forms.ToolStripMenuItem последовательныеПортыToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem обновитьF5ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem графикF1ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem раширенныеНастройкиToolStripMenuItem;
-        private System.Windows.Forms.Label messagesPerSecondLabel;
-        private System.Windows.Forms.Label messagesPerSecond;
-        private System.Windows.Forms.Timer messagesPerSecondTimer;
-        private System.Windows.Forms.RichTextBox serialDataArea;
+        private System.Windows.Forms.Label SerialStatus;
+        private System.Windows.Forms.Button ConnectToSerial;
+        private System.Windows.Forms.ComboBox SerialSpeeds;
+        private System.Windows.Forms.ComboBox SerialNames;
+        private System.Windows.Forms.Label SerialRxCount;
+        private System.Windows.Forms.Label Status;
+        private System.Windows.Forms.MenuStrip MenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem UpdatePorts_TS;
+        private System.Windows.Forms.ToolStripMenuItem PortExtendedSettings_TS;
+        private System.Windows.Forms.Label MessagesPerSecond;
+        private System.Windows.Forms.Timer MessagesPerSecondTimer;
         private System.Windows.Forms.GroupBox serialOutGroup;
-        private System.Windows.Forms.CheckBox serialHexMode;
         private System.Windows.Forms.CheckedListBox ConnectedClients;
+        private System.Windows.Forms.ToolStripMenuItem ImportPacketFormat_TS;
+        private System.Windows.Forms.Panel StatusBar;
     }
 }
 

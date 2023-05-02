@@ -6,18 +6,24 @@ namespace Com_Parser_2
     class AsyncDataLogging
     {
         const int FLUSH_BUFFER_SIZE = 1024;
+        private Stream Stream { get; }
 
-        public async static Task Flush(Stream stream)
+        public AsyncDataLogging(Stream Stream)
         {
-            if (stream.Length >= FLUSH_BUFFER_SIZE)
+            this.Stream = Stream;
+        }
+
+        public async Task Flush()
+        {
+            if (Stream.Length >= FLUSH_BUFFER_SIZE)
             {
-                await stream.FlushAsync();
+                await Stream.FlushAsync();
             }
         }
 
-        public async static Task Write(Stream stream, byte[] data)
+        public async Task Write(byte[] data)
         {
-            await stream.WriteAsync(data, 0, data.Length);
+            await Stream.WriteAsync(data, 0, data.Length);
         }
     }
 }

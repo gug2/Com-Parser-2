@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace Com_Parser_2
 {
-    class Status
+    class StatusLogging
     {
         public static void Error(Label status, string msg)
         {

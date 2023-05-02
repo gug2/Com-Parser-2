@@ -10,11 +10,11 @@ namespace Com_Parser_2
         // длина пакета принимаемого сообщения
         public static readonly int MESSAGE_SIZE = 60;
         // частота принимаемых сообщений
-        private static readonly int MESSAGES_PER_SECOND = 4;
+        //private static readonly int MESSAGES_PER_SECOND = 4;
         // предполагаемый запас для буффера в секундах
-        private static readonly int WORKING_TIMEOUT_SEC = 10;
+        //private static readonly int WORKING_TIMEOUT_SEC = 10;
         // итоговый размер буффера
-        private static readonly int SERIAL_BUFFER_SIZE = MESSAGE_SIZE * MESSAGES_PER_SECOND * WORKING_TIMEOUT_SEC;
+        //private static readonly int SERIAL_BUFFER_SIZE = MESSAGE_SIZE * MESSAGES_PER_SECOND * WORKING_TIMEOUT_SEC;
 
         private static readonly GlobalFields instance = new GlobalFields();
         
