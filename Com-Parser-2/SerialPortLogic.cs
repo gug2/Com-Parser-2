@@ -1,43 +1,46 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO.Ports;
 using System.ComponentModel;
+using System.IO.Ports;
 
 namespace Com_Parser_2
 {
     class SerialPortLogic
     {
         [Browsable(false)]
-        public SerialPort Port { set; get; }
+        public SerialPort Port { private set; get; }
 
         [Browsable(false)]
         public bool HasAvailablePorts { private set; get; }
 
-        public event EventHandler Opened;
-        public event EventHandler Closed;
+        public event EventHandler Opening;
+        public event EventHandler Closing;
 
-        public static bool ScanPorts(out string[] ports)
+        public string[] ScanPorts()
         {
-            ports = SerialPort.GetPortNames();
+            string[] ports = SerialPort.GetPortNames();
+            HasAvailablePorts = ports.Length > 0;
 
-            return ports.Length > 0;
+            return ports;
         }
 
-        public void Connect()
+        public void Connect(string name, SerialPortSettings settings)
         {
-            if (Port == null || Port.IsOpen)
+            if (Port != null && Port.IsOpen) throw new Exception("Порт уже открыт.");
+
+            try
             {
-                return;
+                Port = new SerialPort(name, settings.Speed, settings.Parity, settings.DataBits, settings.StopBits);
+
+                if (Opening != null)
+                {
+                    Opening.Invoke(this, EventArgs.Empty);
+                }
+
+                Port.Open();
             }
-
-            Port.Open();
-
-            if (Opened != null)
+            catch (Exception e)
             {
-                Opened.Invoke(this, EventArgs.Empty);
+                throw e;
             }
         }
 
@@ -48,12 +51,14 @@ namespace Com_Parser_2
                 return;
             }
 
-            Port.Close();
-
-            if (Closed != null)
+            if (Closing != null)
             {
-                Closed.Invoke(this, EventArgs.Empty);
+                Closing.Invoke(this, EventArgs.Empty);
             }
+
+            Port.Close();
+            Port.Dispose();
+            Port = null;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
-namespace Com_Parser_2
+namespace Com_Parser_2_client
 {
     class PacketFormat
     {

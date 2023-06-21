@@ -5,7 +5,7 @@ namespace Com_Parser_2
 {
     class AsyncDataLogging
     {
-        const int FLUSH_BUFFER_SIZE = 1024;
+        private const int FLUSH_BUFFER_SIZE = 1024;
         private Stream Stream { get; }
 
         public AsyncDataLogging(Stream Stream)
