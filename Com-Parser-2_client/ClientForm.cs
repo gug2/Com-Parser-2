@@ -1,32 +1,43 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace Com_Parser_2_client
 {
     public partial class ClientForm : Form
     {
+        public static StatusLogging StatusLogging;
+
         private NetTransferLogic netTransferLogic;
-        private DisplayLogic cl;
+        private Stream netStream;
+        private DisplayLogic displayLogic;
+        private BackgroundWorker parserWorker;
+        private string fileForParse;
 
         public ClientForm()
         {
             InitializeComponent();
+            StatusLogging = StatusLogging.From(StatusValue);
         }
 
         private void ClientForm_Load(object sender, EventArgs e)
         {
-            cl = new DisplayLogic(flowLayoutPanel2, flowLayoutPanel3);
-
-            PacketFormat pf = new PacketFormat("loadme.cs", "loadme.dll");
-            pf.AssemblyCode();
-            cl.Load(pf);
-            cl.ParseBinFile("log_cn.bin");
-            //cl.ParseBinFile("var8_noised.dat");
-            //cl.ParseBinFile("var8_clean.dat");
-
-            NetRxCount.SetFormatArgs(cl.SuccessPackets, cl.BrokenPackets);
+            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel);
+            parserWorker = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true
+            };
+            parserWorker.ProgressChanged += (o, a) =>
+            {
+                ParsedFileProgress.Value = a.ProgressPercentage;
+            };
+            parserWorker.DoWork += (o, a) =>
+            {
+                displayLogic.ParseBinFile(parserWorker, fileForParse);
+                NetRxCount.Invoke(new EventHandler<int[]>(NetRxCountUpdating), NetRxCount, new int[] { displayLogic.SuccessPackets, displayLogic.BrokenPackets });
+            };
 
             netTransferLogic = new NetTransferLogic(RemoteReceiveWorker);
             netTransferLogic.PacketReceived += (o, a) =>
@@ -38,17 +49,22 @@ namespace Com_Parser_2_client
                 Invoke(new EventHandler(NetTransferLogicServer_Disconnecting), o, a);
             };
 
-            RemoteAddressValue.TextValidator((text) =>
+            RemoteAddress.TextValidator((text) =>
             {
-                bool flag = VerifyRemoteAddress(text);
+                bool flag = VerifyRemoteAddress(RemoteAddress, text);
 
                 if (!flag)
                 {
-                    StatusLogging.Error(StatusValue, "Некорректный формат! Адрес должен находиться в пределах от 0.0.0.0 до 255.255.255.255");
+                    StatusLogging.Error("Некорректный формат! Адрес должен находиться в пределах от 0.0.0.0 до 255.255.255.255");
                 }
 
                 return flag;
             });
+        }
+
+        private void NetRxCountUpdating(object sender, int[] e)
+        {
+            NetRxCount.SetFormatArgs(e[0], e[1]);
         }
 
         private void NetTransferLogicServer_Disconnecting(object sender, EventArgs e)
@@ -58,7 +74,9 @@ namespace Com_Parser_2_client
 
         private void NetTransferLogic_PacketReceived(object sender, byte[] e)
         {
-            StatusLogging.Info(StatusValue, String.Format("принят пакет: {0}", BitConverter.ToString(e)));
+            StatusLogging.Info(String.Format("Принят пакет: {0}", BitConverter.ToString(e)));
+
+            displayLogic.AddToStream(netStream, e);
         }
 
         private void ClientForm_Layout(object sender, LayoutEventArgs e)
@@ -68,31 +86,35 @@ namespace Com_Parser_2_client
 
         private bool CheckRemoteIP()
         {
-            return RemoteAddressValue.MaskCompleted && RemotePortValue.MaskCompleted;
+            return RemoteAddress.MaskCompleted && RemotePort.MaskCompleted;
         }
 
         private async void ConnectRemote(object sender, EventArgs e)
         {
-            if (!RemoteAddressValue.MaskCompleted || !RemotePortValue.MaskCompleted)
+            if (!CheckRemoteIP())
             {
                 return;
             }
 
-            string address = TrimRemoteAddress(RemoteAddressValue.Text, false);
-            int port = Convert.ToInt32(RemotePortValue.Text);
+            string address = TrimRemoteAddress(RemoteAddress, false);
+            int port = Convert.ToInt32(RemotePort.Text);
 
             try
             {
                 await netTransferLogic.Connect(address, port);
 
+                netStream = new MemoryStream();
+                displayLogic.BeginParseStream(netStream);
+
                 ConnectToRemote.Click -= ConnectToRemote_Click;
                 ConnectToRemote.Click += DisconnectRemote;
-                ConnectToRemote.Text = "Откл.";
-                StatusLogging.Info(RemoteStatus, "Соединено", logTime: false);
+                ConnectToRemote.Text = "Отключить";
+                ConnectionStatus.Text = "Соединено";
+                ConnectionStatus.ForeColor = Color.Green;
             }
             catch (Exception ex)
             {
-                StatusLogging.Error(StatusValue, ex.ToString());
+                StatusLogging.Error(ex.ToString());
             }
         }
 
@@ -100,10 +122,13 @@ namespace Com_Parser_2_client
         {
             netTransferLogic.Disconnect();
 
+            displayLogic.EndParseStream(netStream);
+
             ConnectToRemote.Click -= DisconnectRemote;
             ConnectToRemote.Click += ConnectToRemote_Click;
-            ConnectToRemote.Text = "Подкл.";
-            StatusLogging.Error(RemoteStatus, "Нет соединения", logTime: false);
+            ConnectToRemote.Text = "Подключить";
+            ConnectionStatus.Text = "Не подключено";
+            ConnectionStatus.ForeColor = Color.Red;
         }
 
         private void ConnectToRemote_Click(object sender, EventArgs e)
@@ -111,43 +136,43 @@ namespace Com_Parser_2_client
             ConnectRemote(sender, e);
         }
 
-        private void RemotePortValue_TextChanged(object sender, EventArgs e)
+        private void RemotePort_TextChanged(object sender, EventArgs e)
         {
             ConnectToRemote.Enabled = CheckRemoteIP();
         }
 
-        private void RemoteAddressValue_Validated(object sender, EventArgs e)
+        private void RemoteAddress_Validated(object sender, EventArgs e)
         {
-            RemoteAddressValue.Text = TrimRemoteAddress(RemoteAddressValue.Text);
+            RemoteAddress.Text = TrimRemoteAddress(RemoteAddress);
 
             ConnectToRemote.Enabled = CheckRemoteIP();
         }
 
-        private string TrimRemoteAddress(string address, bool shouldPadCell = true)
+        private string TrimRemoteAddress(NullableMaskedTextBox textBox, bool shouldPadCell = true)
         {
-            string[] cells = address.Split(RemoteAddressValue.Delimiter);
+            string[] cells = textBox.Text.Split(textBox.Delimiter);
 
             int cellSize;
             for (int i = 0; i < cells.Length; i++)
             {
                 if (!shouldPadCell)
                 {
-                    cells[i] = cells[i].Trim(new char[] { RemoteAddressValue.PromptChar, ' ' });
+                    cells[i] = cells[i].Trim(new char[] { textBox.PromptChar, ' ' });
                 }
 
                 cellSize = cells[i].Length;
 
                 // удаляем незначащие нули, если имеются
-                cells[i] = TrimExtraZeros(cells[i], RemoteAddressValue.PromptChar);
+                cells[i] = TrimExtraZeros(cells[i], textBox.PromptChar);
 
                 // заполняем пустое место, если необходимо
                 if (shouldPadCell && cells[i].Length < cellSize)
                 {
-                    cells[i] = cells[i].PadRight(cellSize, RemoteAddressValue.PromptChar);
+                    cells[i] = cells[i].PadRight(cellSize, textBox.PromptChar);
                 }
             }
 
-            return String.Join(RemoteAddressValue.Delimiter.ToString(), cells);
+            return String.Join(textBox.Delimiter.ToString(), cells);
         }
 
         private string TrimExtraZeros(string s, char promptChar)
@@ -161,9 +186,9 @@ namespace Com_Parser_2_client
             return s.Remove(0, k);
         }
 
-        private bool VerifyRemoteAddress(string address)
+        private bool VerifyRemoteAddress(NullableMaskedTextBox textBox, string address)
         {
-            string[] cells = address.Split(RemoteAddressValue.Delimiter);
+            string[] cells = address.Split(textBox.Delimiter);
 
             if (cells.Length != 4)
             {
@@ -172,7 +197,7 @@ namespace Com_Parser_2_client
 
             for (int i = 0; i < cells.Length; i++)
             {
-                cells[i] = cells[i].Trim(new char[] { RemoteAddressValue.PromptChar, ' ' });
+                cells[i] = cells[i].Trim(new char[] { textBox.PromptChar, ' ' });
 
                 if (cells[i].Length == 0)
                 {
@@ -206,24 +231,34 @@ namespace Com_Parser_2_client
                 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    string name = Path.GetFileNameWithoutExtension(dialog.FileName);
-                    string directory = Path.GetDirectoryName(dialog.FileName);
-                    if (!string.IsNullOrEmpty(directory))
+                    UserScript script = new UserScript(dialog.FileName);
+
+                    if (script.Compile())
                     {
-                        directory += '\\';
+                        // загрузка скрипта
+                        PacketFormat format = new PacketFormat(script);
+                        displayLogic.Load(format);
                     }
-                    //PacketFormat.AssemblyCode(dialog.FileName, directory + name + ".dll");
                 }
             }
         }
 
-        private void flowLayoutPanel1_Layout(object sender, LayoutEventArgs e)
+        private void BrowseParsedFilePath_Click(object sender, EventArgs e)
         {
-            FlowLayoutPanel flow = sender as FlowLayoutPanel;
-
-            foreach (Control c in flow.Controls)
+            using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                c.Width = (int)(flow.Width * 0.95F);
+                dialog.CheckPathExists = true;
+                dialog.CheckFileExists = true;
+                dialog.Multiselect = false;
+                dialog.Filter = "Двоичные данные (*.txt;*.bin;*.dat)|*.txt;*.bin;*.dat;";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    fileForParse = dialog.FileName;
+                    ParsedFilePath.SetFormatArgs(dialog.FileName);
+
+                    ParseFile.Enabled = !string.IsNullOrEmpty(fileForParse);
+                }
             }
         }
 
@@ -237,7 +272,7 @@ namespace Com_Parser_2_client
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                flowLayoutPanel3.Font = dialog.Font;
+                TextFlowPanel.Font = dialog.Font;
             }
         }
 
@@ -251,13 +286,38 @@ namespace Com_Parser_2_client
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                foreach (Control c in flowLayoutPanel3.Controls)
+                foreach (Control c in TextFlowPanel.Controls)
                 {
                     if (c is Label l && l.Name == "value")
                     {
                         l.Font = dialog.Font;
                     }
                 }
+            }
+        }
+
+        private void flowLayoutPanel1_ClientSizeChanged(object sender, EventArgs e)
+        {
+            FlowLayoutPanel flow = sender as FlowLayoutPanel;
+
+            foreach (Control c in flow.Controls)
+            {
+                c.Width = flow.ClientSize.Width - c.Left * 2;
+            }
+        }
+
+        private void ParsedFileGroup_ClientSizeChanged(object sender, EventArgs e)
+        {
+            Control c = sender as Control;
+
+            ParsedFilePath.Width = c.ClientSize.Width - ParsedFilePath.Left * 2;
+        }
+
+        private void ParseFile_Click(object sender, EventArgs e)
+        {
+            if (!parserWorker.IsBusy)
+            {
+                parserWorker.RunWorkerAsync();
             }
         }
     }

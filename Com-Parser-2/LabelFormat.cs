@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Com_Parser_2_client
+namespace Com_Parser_2
 {
     class LabelFormat : Label
     {

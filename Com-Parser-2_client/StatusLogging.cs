@@ -4,31 +4,65 @@ using System.Windows.Forms;
 
 namespace Com_Parser_2_client
 {
-    class StatusLogging
+    public class StatusLogging
     {
         private static readonly ToolTip toolTip = new ToolTip()
         {
             ShowAlways = true
         };
 
-        public static void Error(Label status, string msg, bool logTime = true)
+        private readonly Control control;
+
+        private StatusLogging(Control control)
+        {
+            this.control = control;
+        }
+
+        public static StatusLogging From(Control control)
+        {
+            return new StatusLogging(control);
+        }
+
+        public void Error(string msg, bool logTime = true)
         {
             toolTip.ToolTipIcon = ToolTipIcon.Error;
-            ShowMessage(status, msg, Color.Red, logTime);
+
+            if (control.InvokeRequired)
+            {
+                control.Invoke(new EventHandler((obj, args) =>
+                {
+                    ShowMessage(msg, Color.Red, logTime);
+                }));
+            }
+            else
+            {
+                ShowMessage(msg, Color.Red, logTime);
+            }
         }
 
-        public static void Info(Label status, string msg, bool logTime = true)
+        public void Info(string msg, bool logTime = true)
         {
             toolTip.ToolTipIcon = ToolTipIcon.Info;
-            ShowMessage(status, msg, Color.Green, logTime);
+
+            if (control.InvokeRequired)
+            {
+                control.Invoke(new EventHandler((obj, args) =>
+                {
+                    ShowMessage(msg, Color.Green, logTime);
+                }));
+            }
+            else
+            {
+                ShowMessage(msg, Color.Green, logTime);
+            }
         }
 
-        private static void ShowMessage(Label status, string msg, Color msgColor, bool logTime)
+        private void ShowMessage(string msg, Color msgColor, bool logTime)
         {
-            status.Text = (logTime ? DateTime.Now.ToLongTimeString() + " -> " : "") + msg;
-            status.ForeColor = msgColor;
+            control.Text = (logTime ? DateTime.Now.ToLongTimeString() + " -> " : "") + msg;
+            control.ForeColor = msgColor;
 
-            toolTip.SetToolTip(status, status.Text);
+            toolTip.SetToolTip(control, control.Text);
         }
     }
 }

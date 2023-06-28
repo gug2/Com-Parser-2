@@ -1,7 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace Com_Parser_2_client
 {
@@ -27,6 +27,16 @@ namespace Com_Parser_2_client
         public void TextValidator(ValidateFunction validator)
         {
             Validator = validator;
+        }
+
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            base.OnLayout(levent);
+
+            if (Validator != null)
+            {
+                MaskCompleted = Validator(Text);
+            }
         }
 
         protected override void OnEnter(EventArgs e)

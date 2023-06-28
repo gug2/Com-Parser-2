@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Diagnostics;
 
 namespace Com_Parser_2
 {
@@ -34,7 +32,7 @@ namespace Com_Parser_2
                 client.Close();
             }
             tcpServer.Stop();
-            Console.WriteLine("Сервер завершил работу.");
+            MainForm.StatusLogging.Info("Сервер завершил работу");
         }
 
         public void Start()
@@ -53,7 +51,7 @@ namespace Com_Parser_2
 
             tcpServer.Start(BACKLOG);
             Clients.Clear();
-            Console.WriteLine("Сервер запущен {0}", tcpServer.LocalEndpoint);
+            MainForm.StatusLogging.Info(String.Format("Сервер запущен {0}", tcpServer.LocalEndpoint));
 
             while (true)
             {
@@ -73,7 +71,6 @@ namespace Com_Parser_2
 
                 TcpClient client = tcpServer.AcceptTcpClient();
                 Clients.Add(client);
-                Console.WriteLine("подключено " + client.Client.RemoteEndPoint);
 
                 if (ClientConnected != null)
                 {
@@ -90,8 +87,6 @@ namespace Com_Parser_2
             {
                 if (!IsSocketConnected(Clients[i].Client))
                 {
-                    Console.WriteLine("отключено " + Clients[i].Client.RemoteEndPoint);
-
                     if (ClientDisconnecting != null)
                     {
                         ClientDisconnecting.Invoke(Clients[i], EventArgs.Empty);
@@ -115,12 +110,12 @@ namespace Com_Parser_2
         {
             if (!IsSocketConnected(client.Client))
             {
-                Console.WriteLine("Ошибка при отправке данных. Клиент не подключен.");
+                MainForm.StatusLogging.Error("Ошибка при отправке данных. Клиент не подключен.");
                 return;
             }
 
             await client.GetStream().WriteAsync(packet, 0, packet.Length);
-            Console.WriteLine("отправка пакета {0}", BitConverter.ToString(packet));
+            MainForm.StatusLogging.Info(String.Format("Отправка пакета \"{0}\"", BitConverter.ToString(packet)));
         }
 
         private bool IsSocketConnected(Socket socket)

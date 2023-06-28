@@ -39,9 +39,10 @@ namespace Com_Parser_2
             System.Windows.Forms.Label label3;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             System.Windows.Forms.ToolStripMenuItem SerialPort_TS_Group;
-            System.Windows.Forms.Label MessagesPerSecondLabel;
             System.Windows.Forms.Panel StatusBar;
             System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+            this.PacketPerSecCount = new Com_Parser_2.LabelFormat();
+            this.SerialRxCount = new Com_Parser_2.LabelFormat();
             this.SerialSettingsFlowPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.SerialParities = new System.Windows.Forms.ComboBox();
             this.SerialDataBits = new System.Windows.Forms.ComboBox();
@@ -53,16 +54,14 @@ namespace Com_Parser_2
             this.SerialNames = new System.Windows.Forms.ComboBox();
             this.UpdatePorts_TS = new System.Windows.Forms.ToolStripMenuItem();
             this.Status = new System.Windows.Forms.Label();
-            this.MessagesPerSecond = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             this.ConnectedClientsGroup = new System.Windows.Forms.GroupBox();
             this.ConnectedClients = new System.Windows.Forms.CheckedListBox();
+            this.StartServer = new System.Windows.Forms.Button();
+            this.SendPacket = new System.Windows.Forms.Button();
+            this.StopServer = new System.Windows.Forms.Button();
             this.MenuStrip = new System.Windows.Forms.MenuStrip();
-            this.MessagesPerSecondTimer = new System.Windows.Forms.Timer(this.components);
+            this.PacketPerSecTimer = new System.Windows.Forms.Timer(this.components);
             this.ServerWorker = new System.ComponentModel.BackgroundWorker();
-            this.SerialRxCount = new Com_Parser_2_client.LabelFormat();
             SerialSettingsGroup = new System.Windows.Forms.GroupBox();
             panel1 = new System.Windows.Forms.Panel();
             label1 = new System.Windows.Forms.Label();
@@ -71,7 +70,6 @@ namespace Com_Parser_2
             panel3 = new System.Windows.Forms.Panel();
             label3 = new System.Windows.Forms.Label();
             SerialPort_TS_Group = new System.Windows.Forms.ToolStripMenuItem();
-            MessagesPerSecondLabel = new System.Windows.Forms.Label();
             StatusBar = new System.Windows.Forms.Panel();
             flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             SerialSettingsGroup.SuspendLayout();
@@ -89,9 +87,10 @@ namespace Com_Parser_2
             // 
             SerialSettingsGroup.AutoSize = true;
             SerialSettingsGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            SerialSettingsGroup.Controls.Add(this.PacketPerSecCount);
+            SerialSettingsGroup.Controls.Add(this.SerialRxCount);
             SerialSettingsGroup.Controls.Add(this.SerialSettingsFlowPanel);
             SerialSettingsGroup.Controls.Add(this.ShowSerialSettings);
-            SerialSettingsGroup.Controls.Add(this.SerialRxCount);
             SerialSettingsGroup.Controls.Add(this.SerialStatus);
             SerialSettingsGroup.Controls.Add(this.ConnectToSerial);
             SerialSettingsGroup.Controls.Add(this.SerialSpeeds);
@@ -103,8 +102,33 @@ namespace Com_Parser_2
             SerialSettingsGroup.TabStop = false;
             SerialSettingsGroup.Text = "Настройки последовательного порта";
             // 
+            // PacketPerSecCount
+            // 
+            this.PacketPerSecCount.AutoSize = true;
+            this.PacketPerSecCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.PacketPerSecCount.ForeColor = System.Drawing.Color.DarkCyan;
+            this.PacketPerSecCount.Format = "Packet/sec: {0}";
+            this.PacketPerSecCount.Location = new System.Drawing.Point(396, 22);
+            this.PacketPerSecCount.Name = "PacketPerSecCount";
+            this.PacketPerSecCount.Size = new System.Drawing.Size(75, 13);
+            this.PacketPerSecCount.TabIndex = 9;
+            this.PacketPerSecCount.Text = "Packet/sec: 0";
+            // 
+            // SerialRxCount
+            // 
+            this.SerialRxCount.AutoSize = true;
+            this.SerialRxCount.ForeColor = System.Drawing.Color.Green;
+            this.SerialRxCount.Format = "RX: {0}";
+            this.SerialRxCount.Location = new System.Drawing.Point(347, 22);
+            this.SerialRxCount.Name = "SerialRxCount";
+            this.SerialRxCount.Size = new System.Drawing.Size(34, 13);
+            this.SerialRxCount.TabIndex = 8;
+            this.SerialRxCount.Text = "RX: 0";
+            // 
             // SerialSettingsFlowPanel
             // 
+            this.SerialSettingsFlowPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.SerialSettingsFlowPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.SerialSettingsFlowPanel.Controls.Add(panel1);
             this.SerialSettingsFlowPanel.Controls.Add(panel2);
@@ -200,7 +224,7 @@ namespace Com_Parser_2
             // 
             this.ShowSerialSettings.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ShowSerialSettings.BackgroundImage")));
             this.ShowSerialSettings.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.ShowSerialSettings.Location = new System.Drawing.Point(477, 17);
+            this.ShowSerialSettings.Location = new System.Drawing.Point(477, 16);
             this.ShowSerialSettings.Name = "ShowSerialSettings";
             this.ShowSerialSettings.Size = new System.Drawing.Size(24, 24);
             this.ShowSerialSettings.TabIndex = 6;
@@ -262,113 +286,96 @@ namespace Com_Parser_2
             this.UpdatePorts_TS.Text = "Обновить";
             this.UpdatePorts_TS.Click += new System.EventHandler(this.UpdatePorts_TS_Click);
             // 
-            // MessagesPerSecondLabel
-            // 
-            MessagesPerSecondLabel.AutoSize = true;
-            MessagesPerSecondLabel.Location = new System.Drawing.Point(8, 10);
-            MessagesPerSecondLabel.Name = "MessagesPerSecondLabel";
-            MessagesPerSecondLabel.Size = new System.Drawing.Size(83, 13);
-            MessagesPerSecondLabel.TabIndex = 4;
-            MessagesPerSecondLabel.Text = "Messages / sec";
-            // 
             // StatusBar
             // 
             StatusBar.AutoScroll = true;
             StatusBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             StatusBar.Controls.Add(this.Status);
-            StatusBar.Controls.Add(MessagesPerSecondLabel);
-            StatusBar.Controls.Add(this.MessagesPerSecond);
-            StatusBar.Location = new System.Drawing.Point(3, 334);
+            StatusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            StatusBar.Location = new System.Drawing.Point(0, 278);
             StatusBar.Name = "StatusBar";
-            StatusBar.Size = new System.Drawing.Size(507, 55);
+            StatusBar.Size = new System.Drawing.Size(531, 48);
             StatusBar.TabIndex = 7;
             // 
             // Status
             // 
-            this.Status.AutoSize = true;
+            this.Status.AutoEllipsis = true;
             this.Status.ForeColor = System.Drawing.Color.Green;
-            this.Status.Location = new System.Drawing.Point(8, 32);
-            this.Status.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
+            this.Status.Location = new System.Drawing.Point(3, 5);
+            this.Status.Margin = new System.Windows.Forms.Padding(3);
             this.Status.Name = "Status";
-            this.Status.Size = new System.Drawing.Size(67, 13);
+            this.Status.Size = new System.Drawing.Size(523, 38);
             this.Status.TabIndex = 0;
             this.Status.Text = "Нет ошибок";
-            // 
-            // MessagesPerSecond
-            // 
-            this.MessagesPerSecond.AutoSize = true;
-            this.MessagesPerSecond.Location = new System.Drawing.Point(104, 10);
-            this.MessagesPerSecond.Name = "MessagesPerSecond";
-            this.MessagesPerSecond.Size = new System.Drawing.Size(13, 13);
-            this.MessagesPerSecond.TabIndex = 5;
-            this.MessagesPerSecond.Text = "0";
             // 
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.Controls.Add(SerialSettingsGroup);
-            flowLayoutPanel1.Controls.Add(this.button1);
-            flowLayoutPanel1.Controls.Add(this.button3);
-            flowLayoutPanel1.Controls.Add(this.button2);
             flowLayoutPanel1.Controls.Add(this.ConnectedClientsGroup);
-            flowLayoutPanel1.Controls.Add(StatusBar);
             flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             flowLayoutPanel1.Location = new System.Drawing.Point(0, 24);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new System.Drawing.Size(531, 302);
+            flowLayoutPanel1.Size = new System.Drawing.Size(531, 254);
             flowLayoutPanel1.TabIndex = 8;
             flowLayoutPanel1.WrapContents = false;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(3, 139);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(96, 23);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "Вкл сервер";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(3, 168);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(96, 23);
-            this.button3.TabIndex = 10;
-            this.button3.Text = "Отправить";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(3, 197);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(96, 23);
-            this.button2.TabIndex = 9;
-            this.button2.Text = "Выкл сервер";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            flowLayoutPanel1.ClientSizeChanged += new System.EventHandler(this.flowLayoutPanel1_ClientSizeChanged);
             // 
             // ConnectedClientsGroup
             // 
-            this.ConnectedClientsGroup.AutoSize = true;
-            this.ConnectedClientsGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ConnectedClientsGroup.Controls.Add(this.ConnectedClients);
-            this.ConnectedClientsGroup.Location = new System.Drawing.Point(3, 226);
+            this.ConnectedClientsGroup.Controls.Add(this.StartServer);
+            this.ConnectedClientsGroup.Controls.Add(this.SendPacket);
+            this.ConnectedClientsGroup.Controls.Add(this.StopServer);
+            this.ConnectedClientsGroup.Location = new System.Drawing.Point(3, 139);
             this.ConnectedClientsGroup.Name = "ConnectedClientsGroup";
-            this.ConnectedClientsGroup.Size = new System.Drawing.Size(507, 102);
+            this.ConnectedClientsGroup.Size = new System.Drawing.Size(400, 161);
             this.ConnectedClientsGroup.TabIndex = 6;
             this.ConnectedClientsGroup.TabStop = false;
             this.ConnectedClientsGroup.Text = "Подключенные узлы";
             // 
             // ConnectedClients
             // 
+            this.ConnectedClients.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.ConnectedClients.FormattingEnabled = true;
-            this.ConnectedClients.Location = new System.Drawing.Point(10, 19);
+            this.ConnectedClients.Location = new System.Drawing.Point(6, 77);
             this.ConnectedClients.Name = "ConnectedClients";
-            this.ConnectedClients.Size = new System.Drawing.Size(491, 64);
+            this.ConnectedClients.Size = new System.Drawing.Size(388, 64);
             this.ConnectedClients.TabIndex = 2;
+            // 
+            // StartServer
+            // 
+            this.StartServer.Location = new System.Drawing.Point(9, 19);
+            this.StartServer.Name = "StartServer";
+            this.StartServer.Size = new System.Drawing.Size(96, 23);
+            this.StartServer.TabIndex = 8;
+            this.StartServer.Text = "Вкл сервер";
+            this.StartServer.UseVisualStyleBackColor = true;
+            this.StartServer.Click += new System.EventHandler(this.StartServer_Click);
+            // 
+            // SendPacket
+            // 
+            this.SendPacket.Enabled = false;
+            this.SendPacket.Location = new System.Drawing.Point(111, 19);
+            this.SendPacket.Name = "SendPacket";
+            this.SendPacket.Size = new System.Drawing.Size(96, 23);
+            this.SendPacket.TabIndex = 10;
+            this.SendPacket.Text = "Отправить";
+            this.SendPacket.UseVisualStyleBackColor = true;
+            this.SendPacket.Click += new System.EventHandler(this.SendPacket_Click);
+            // 
+            // StopServer
+            // 
+            this.StopServer.Enabled = false;
+            this.StopServer.Location = new System.Drawing.Point(9, 48);
+            this.StopServer.Name = "StopServer";
+            this.StopServer.Size = new System.Drawing.Size(96, 23);
+            this.StopServer.TabIndex = 9;
+            this.StopServer.Text = "Выкл сервер";
+            this.StopServer.UseVisualStyleBackColor = true;
+            this.StopServer.Click += new System.EventHandler(this.StopServer_Click);
             // 
             // MenuStrip
             // 
@@ -380,25 +387,14 @@ namespace Com_Parser_2
             this.MenuStrip.TabIndex = 3;
             this.MenuStrip.Text = "menuStrip1";
             // 
-            // MessagesPerSecondTimer
+            // PacketPerSecTimer
             // 
-            this.MessagesPerSecondTimer.Interval = 1000;
-            this.MessagesPerSecondTimer.Tick += new System.EventHandler(this.MessagesPerSecondTimer_Tick);
+            this.PacketPerSecTimer.Interval = 1000;
+            this.PacketPerSecTimer.Tick += new System.EventHandler(this.PacketPerSecTimer_Tick);
             // 
             // ServerWorker
             // 
             this.ServerWorker.WorkerSupportsCancellation = true;
-            // 
-            // SerialRxCount
-            // 
-            this.SerialRxCount.AutoSize = true;
-            this.SerialRxCount.ForeColor = System.Drawing.Color.Green;
-            this.SerialRxCount.Format = "RX: {0}";
-            this.SerialRxCount.Location = new System.Drawing.Point(371, 22);
-            this.SerialRxCount.Name = "SerialRxCount";
-            this.SerialRxCount.Size = new System.Drawing.Size(34, 13);
-            this.SerialRxCount.TabIndex = 10;
-            this.SerialRxCount.Text = "RX: 0";
             // 
             // MainForm
             // 
@@ -407,6 +403,7 @@ namespace Com_Parser_2
             this.ClientSize = new System.Drawing.Size(531, 326);
             this.Controls.Add(flowLayoutPanel1);
             this.Controls.Add(this.MenuStrip);
+            this.Controls.Add(StatusBar);
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Com-Parser-2";
@@ -421,7 +418,6 @@ namespace Com_Parser_2
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             StatusBar.ResumeLayout(false);
-            StatusBar.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
             this.ConnectedClientsGroup.ResumeLayout(false);
@@ -440,8 +436,7 @@ namespace Com_Parser_2
         private System.Windows.Forms.Label Status;
         private System.Windows.Forms.MenuStrip MenuStrip;
         private System.Windows.Forms.ToolStripMenuItem UpdatePorts_TS;
-        private System.Windows.Forms.Label MessagesPerSecond;
-        private System.Windows.Forms.Timer MessagesPerSecondTimer;
+        private System.Windows.Forms.Timer PacketPerSecTimer;
         private System.Windows.Forms.GroupBox ConnectedClientsGroup;
         private System.Windows.Forms.CheckedListBox ConnectedClients;
         private System.Windows.Forms.Button ShowSerialSettings;
@@ -450,10 +445,11 @@ namespace Com_Parser_2
         private System.Windows.Forms.ComboBox SerialStopBits;
         private System.Windows.Forms.FlowLayoutPanel SerialSettingsFlowPanel;
         private System.ComponentModel.BackgroundWorker ServerWorker;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private Com_Parser_2_client.LabelFormat SerialRxCount;
+        private System.Windows.Forms.Button StartServer;
+        private System.Windows.Forms.Button StopServer;
+        private System.Windows.Forms.Button SendPacket;
+        private LabelFormat SerialRxCount;
+        private LabelFormat PacketPerSecCount;
     }
 }
 

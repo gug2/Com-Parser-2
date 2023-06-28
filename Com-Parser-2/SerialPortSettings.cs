@@ -4,17 +4,24 @@ namespace Com_Parser_2
 {
     class SerialPortSettings
     {
-        public int Speed { set; get; }
-        public Parity Parity { set; get; }
-        public int DataBits { set; get; }
-        public StopBits StopBits { set; get; }
-    
-        public SerialPortSettings()
+        public static readonly SerialPortSettings Default = new SerialPortSettings(9600, Parity.None, 8, StopBits.One);
+
+        public int Speed { get; }
+        public Parity Parity { get; }
+        public int DataBits { get; }
+        public StopBits StopBits { get; }
+
+        private SerialPortSettings(int speed, Parity parity, int dataBits, StopBits stopBits)
         {
-            Speed = 9600;
-            Parity = Parity.None;
-            DataBits = 8;
-            StopBits = StopBits.One;
+            Speed = speed;
+            Parity = parity;
+            DataBits = dataBits;
+            StopBits = stopBits;
+        }
+
+        public static SerialPortSettings Create(int speed, Parity parity, int dataBits, StopBits stopBits)
+        {
+            return new SerialPortSettings(speed, parity, dataBits, stopBits);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -14,9 +15,12 @@ namespace Com_Parser_2_client
 
         private readonly Stream stream;
 
-        public StreamPacketParser(Stream source)
+        public StreamPacketParser(Stream source, PacketFormat packetFormat)
         {
             stream = source;
+            StartMark = packetFormat.StartMarkPattern;
+            PacketSize = packetFormat.PacketSize;
+            ValidateByChecksum = packetFormat.ValidateByChecksum;
         }
 
         private bool IsEqual(byte[] arrA, byte[] arrB)
@@ -92,6 +96,8 @@ namespace Com_Parser_2_client
 
         public void Parse(Action<byte[]> packetHandling, Action<byte[]> brokenPacketHandling)
         {
+            Stopwatch sw = Stopwatch.StartNew();
+
             byte[] buffer = new byte[512];
 
             long totalSize = stream.Length;
@@ -146,6 +152,10 @@ namespace Com_Parser_2_client
 
                 bytesRead += readed;
             }
+
+            sw.Stop();
+            Console.WriteLine("Время: {0} мс", sw.ElapsedMilliseconds);
+            ClientForm.StatusLogging.Info(String.Format("Время: {0} мс", sw.ElapsedMilliseconds));
         }
     }
 }

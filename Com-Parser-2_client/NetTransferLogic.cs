@@ -3,13 +3,11 @@ using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Windows.Forms;using System.IO;
 
 namespace Com_Parser_2_client
 {
     class NetTransferLogic
     {
-        private const int NET_BUFFER_SIZE = 1024;
         private readonly BackgroundWorker Worker;
         private TcpClient tcpClient;
 
@@ -30,6 +28,11 @@ namespace Com_Parser_2_client
             {
                 if (Worker.CancellationPending)
                 {
+                    if (ServerDisconnecting != null)
+                    {
+                        ServerDisconnecting.Invoke(tcpClient, EventArgs.Empty);
+                    }
+
                     e.Cancel = true;
                     break;
                 }
@@ -38,7 +41,7 @@ namespace Com_Parser_2_client
                 {
                     if (!IsSocketConnected(tcpClient.Client))
                     {
-                        throw new Exception("сервер недоступен.");
+                        throw new Exception("Сервер недоступен.");
                     }
 
                     int rx = await tcpClient.GetStream().ReadAsync(buffer, 0, buffer.Length);
@@ -55,7 +58,7 @@ namespace Com_Parser_2_client
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Сервер принудительно закрыл соединение. {0}", ex.ToString());
+                    ClientForm.StatusLogging.Error(String.Format("Сервер принудительно закрыл соединение: {0}", ex.ToString()));
 
                     if (ServerDisconnecting != null)
                     {
@@ -87,9 +90,8 @@ namespace Com_Parser_2_client
 
                 if (tcpClient.Connected)
                 {
+                    ClientForm.StatusLogging.Info(String.Format("Подключились к узлу {0}.", tcpClient.Client.RemoteEndPoint));
                     Worker.RunWorkerAsync();
-
-                    Console.WriteLine("Подключились к узлу {0}!", tcpClient.Client.RemoteEndPoint);
                 }
             }
         }
@@ -104,6 +106,7 @@ namespace Com_Parser_2_client
             Worker.CancelAsync();
 
             tcpClient.Close();
+            tcpClient.Dispose();
             tcpClient = null;
         }
     }

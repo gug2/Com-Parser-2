@@ -1,19 +1,22 @@
 ﻿using System;
-using System.ComponentModel;
 using System.IO.Ports;
 
 namespace Com_Parser_2
 {
     class SerialPortLogic
     {
-        [Browsable(false)]
-        public SerialPort Port { private set; get; }
+        public static readonly SerialPortLogic Instance = new SerialPortLogic();
 
-        [Browsable(false)]
+        private SerialPort Port;
         public bool HasAvailablePorts { private set; get; }
 
         public event EventHandler Opening;
         public event EventHandler Closing;
+
+        private SerialPortLogic()
+        {
+
+        }
 
         public string[] ScanPorts()
         {
@@ -23,9 +26,32 @@ namespace Com_Parser_2
             return ports;
         }
 
+        public bool Poll()
+        {
+            try
+            {
+                // проверяем не оборвалось ли соединение с последовательным портом
+                int i = Port.BytesToRead;
+            }
+            catch
+            {
+                if (Closing != null)
+                {
+                    Closing.Invoke(this, EventArgs.Empty);
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
         public void Connect(string name, SerialPortSettings settings)
         {
-            if (Port != null && Port.IsOpen) throw new Exception("Порт уже открыт.");
+            if (Port != null && Port.IsOpen)
+            {
+                throw new Exception("Порт уже открыт.");
+            }
 
             try
             {
@@ -33,7 +59,7 @@ namespace Com_Parser_2
 
                 if (Opening != null)
                 {
-                    Opening.Invoke(this, EventArgs.Empty);
+                    Opening.Invoke(Port, EventArgs.Empty);
                 }
 
                 Port.Open();
@@ -53,7 +79,7 @@ namespace Com_Parser_2
 
             if (Closing != null)
             {
-                Closing.Invoke(this, EventArgs.Empty);
+                Closing.Invoke(Port, EventArgs.Empty);
             }
 
             Port.Close();

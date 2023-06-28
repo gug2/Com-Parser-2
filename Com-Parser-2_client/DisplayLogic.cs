@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -16,10 +15,10 @@ namespace Com_Parser_2_client
         private readonly FlowLayoutPanel chartsPanel, textPanel;
         private readonly Dictionary<string, Chart> Charts = new Dictionary<string, Chart>();
         private readonly Dictionary<string, Label> Texts = new Dictionary<string, Label>();
-        private object Packet;
-        private int PacketSize;
+        private Type PacketType;
         private PacketFormat PacketFormat;
         private DataObject Time;
+
         public int SuccessPackets { private set; get; }
         public int BrokenPackets { private set; get; }
 
@@ -128,19 +127,32 @@ namespace Com_Parser_2_client
             Texts.Add(dataObject.Name, label2);
         }
 
-        public void ParseBinFile(string path)
+        public void ParseBinFile(System.ComponentModel.BackgroundWorker worker, string path)
         {
             if (!File.Exists(path))
             {
                 Console.WriteLine("Файл не найден! Путь: \"{0}\"", Path.GetFullPath(path));
+                ClientForm.StatusLogging.Error(String.Format("Файл не найден! Путь: \"{0}\"", Path.GetFullPath(path)));
                 return;
             }
 
-            if (PacketFormat == null || Packet == null)
+            if (PacketFormat == null || PacketType == null)
             {
                 Console.WriteLine("Отсутствует формат пакета!");
+                ClientForm.StatusLogging.Error("Отсутствует формат пакета!");
                 return;
             }
+
+            chartsPanel.Invoke(new EventHandler((o, a) =>
+            {
+                SuccessPackets = 0;
+                BrokenPackets = 0;
+                foreach (Chart chart in chartsPanel.Controls)
+                {
+                    chart.Series[0].Points.Clear();
+                }
+
+            }), chartsPanel);
 
             string outPath = path + "_parser_out.txt";
 
@@ -150,17 +162,11 @@ namespace Com_Parser_2_client
             {
                 using (Stream stream = File.OpenRead(path))
                 {
-                    StreamPacketParser parser = new StreamPacketParser(stream)
-                    {
-                        StartMark = new byte[] { 0x24 },
-                        PacketSize = PacketSize,
-                        ValidateByChecksum = false
-                    };
+                    StreamPacketParser parser = new StreamPacketParser(stream, PacketFormat);
 
-                    Stopwatch sw = Stopwatch.StartNew();
                     parser.Parse(buffer =>
                     {
-                        filledStruct = PacketFormat.MarshalDeserializeByArray(Packet.GetType(), buffer);
+                        filledStruct = PacketFormat.MarshalDeserializeByArray(PacketType, buffer);
                         SuccessPackets++;
 
                         outStruct = PacketFormat.GetOutputStruct(filledStruct);
@@ -171,10 +177,12 @@ namespace Com_Parser_2_client
                         Out("\"\n", outStream);
 
                         HandlePacket(parser, outStruct);
+
+                        worker.ReportProgress((int)(stream.Position / (float)stream.Length * 100));
                     },
                     buffer =>
                     {
-                        filledStruct = PacketFormat.MarshalDeserializeByArray(Packet.GetType(), buffer);
+                        filledStruct = PacketFormat.MarshalDeserializeByArray(PacketType, buffer);
                         BrokenPackets++;
 
                         outStruct = PacketFormat.GetOutputStruct(filledStruct);
@@ -183,11 +191,52 @@ namespace Com_Parser_2_client
                         var s = outStruct.GetType().GetFields().Select(info => String.Format("{0}: {1}", info.Name, info.GetValue(outStruct)));
                         Out(String.Join(", ", s), outStream);
                         Out("\" BROKEN\n", outStream);
+
+                        worker.ReportProgress((int)(stream.Position / (float)stream.Length * 100));
                     });
-                    sw.Stop();
-                    Console.WriteLine("Время: {0} мс", sw.ElapsedMilliseconds);
+
+                    worker.ReportProgress(100);
                 }
             }
+        }
+
+        public void BeginParseStream(Stream stream)
+        {
+            if (PacketFormat == null || PacketType == null)
+            {
+                Console.WriteLine("Отсутствует формат пакета!");
+                ClientForm.StatusLogging.Error("Отсутствует формат пакета!");
+                return;
+            }
+        }
+
+        public void AddToStream(Stream stream, byte[] b)
+        {
+            stream.Write(b, 0, b.Length);
+
+            stream.Seek(0, SeekOrigin.Begin);
+            StreamPacketParser parser = new StreamPacketParser(stream, PacketFormat);
+
+            object filledStruct, outStruct;
+            parser.Parse(buffer =>
+            {
+                filledStruct = PacketFormat.MarshalDeserializeByArray(PacketType, buffer);
+                SuccessPackets++;
+
+                outStruct = PacketFormat.GetOutputStruct(filledStruct);
+
+                HandlePacket(parser, outStruct);
+            },
+            buffer =>
+            {
+                BrokenPackets++;
+            });
+        }
+
+        public void EndParseStream(Stream stream)
+        {
+            stream.Close();
+            stream.Dispose();
         }
 
         private void Out(string msg, Stream stream)
@@ -198,18 +247,23 @@ namespace Com_Parser_2_client
 
         public void Load(PacketFormat packetFormat)
         {
+            chartsPanel.Controls.Clear();
+            textPanel.Controls.Clear();
+            Charts.Clear();
+            Texts.Clear();
+
             object inputStruct = packetFormat.GetInputStruct();
             object outputStruct = packetFormat.GetOutputStruct(inputStruct);
 
             if (inputStruct == null || outputStruct == null)
             {
                 Console.WriteLine("Ошибка! Отсутствует объект структуры.");
+                ClientForm.StatusLogging.Error("Ошибка! Отсутствует объект структуры.");
                 return;
             }
 
-            Packet = inputStruct;
+            PacketType = inputStruct.GetType();
             PacketFormat = packetFormat;
-            PacketSize = PacketFormat.SizeOf(inputStruct);
 
             List<DataObject> dataObjects = outputStruct.GetType().GetFields().Select(info => DataObject.ConvertField(info)).ToList();
 
@@ -230,7 +284,7 @@ namespace Com_Parser_2_client
                     AddTextFor(obj);
                 }
 
-                Console.WriteLine(obj);
+                Console.WriteLine("Загружен {0}", obj);
             }
         }
     }
