@@ -37,7 +37,7 @@ namespace Com_Parser_2
             {
                 if (Closing != null)
                 {
-                    Closing.Invoke(this, EventArgs.Empty);
+                    Closing.Invoke(Port, EventArgs.Empty);
                 }
 
                 return false;

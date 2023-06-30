@@ -54,6 +54,8 @@ namespace Com_Parser_2_client
             this.TextFlowPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.RemoteReceiveWorker = new System.ComponentModel.BackgroundWorker();
+            this.ParseStreamWorker = new System.ComponentModel.BackgroundWorker();
+            this.ParserWorker = new System.ComponentModel.BackgroundWorker();
             StatusBar = new System.Windows.Forms.Panel();
             Datas_TS = new System.Windows.Forms.ToolStripMenuItem();
             Font_TS = new System.Windows.Forms.ToolStripMenuItem();
@@ -323,6 +325,14 @@ namespace Com_Parser_2_client
             // 
             this.RemoteReceiveWorker.WorkerSupportsCancellation = true;
             // 
+            // ParseStreamWorker
+            // 
+            this.ParseStreamWorker.WorkerSupportsCancellation = true;
+            // 
+            // ParserWorker
+            // 
+            this.ParserWorker.WorkerReportsProgress = true;
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -366,6 +376,8 @@ namespace Com_Parser_2_client
         private System.Windows.Forms.FlowLayoutPanel TextFlowPanel;
         private System.ComponentModel.BackgroundWorker RemoteReceiveWorker;
         private System.Windows.Forms.Button ParseFile;
+        private System.ComponentModel.BackgroundWorker ParseStreamWorker;
+        private System.ComponentModel.BackgroundWorker ParserWorker;
     }
 }
 

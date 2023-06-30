@@ -11,7 +11,7 @@ namespace Com_Parser_2_client
         private readonly BackgroundWorker Worker;
         private TcpClient tcpClient;
 
-        public event EventHandler<byte[]> PacketReceived;
+        public event EventHandler<object[]> PacketReceived;
         public event EventHandler ServerDisconnecting;
 
         public NetTransferLogic(BackgroundWorker Worker)
@@ -48,11 +48,9 @@ namespace Com_Parser_2_client
 
                     if (rx > 0)
                     {
-                        Array.Resize(ref buffer, rx);
-
                         if (PacketReceived != null)
                         {
-                            PacketReceived.Invoke(tcpClient, buffer);
+                            PacketReceived.Invoke(tcpClient, new object[] { buffer, rx });
                         }
                     }
                 }

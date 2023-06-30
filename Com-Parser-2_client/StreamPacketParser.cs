@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Com_Parser_2_client
 {
@@ -13,6 +14,7 @@ namespace Com_Parser_2_client
 
         public int ReceivedPacketIndex { private set; get; }
 
+        private readonly Stopwatch sw = new Stopwatch();
         private readonly Stream stream;
 
         public StreamPacketParser(Stream source, PacketFormat packetFormat)
@@ -50,24 +52,27 @@ namespace Com_Parser_2_client
                 }
 
                 // если не нашли, переходим на следующий байт
-                stream.Seek(-buffer.Length + 1, SeekOrigin.Current);
+                if (buffer.Length > 1)
+                {
+                    stream.Seek(-buffer.Length + 1, SeekOrigin.Current);
+                }
             }
 
             Console.WriteLine("Не удалось синхронизироваться с потоком данных!");
             return false;
         }
 
-        public bool ValidateChecksum(byte[] packet)
+        private bool ValidateChecksum(byte[] packet, int packetSize)
         {
-            if (packet.Length < 2)
+            if (packetSize < 2)
             {
                 return false;
             }
 
-            byte checksumReceived = packet[packet.Length - 1];
+            byte checksumReceived = packet[packetSize - 1];
 
             byte checksum = packet[0];
-            for (int i = 1; i < packet.Length - 1; i++)
+            for (int i = 1; i < packetSize - 1; i++)
             {
                 checksum ^= packet[i];
             }
@@ -96,7 +101,7 @@ namespace Com_Parser_2_client
 
         public void Parse(Action<byte[]> packetHandling, Action<byte[]> brokenPacketHandling)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            //sw.Restart();
 
             byte[] buffer = new byte[512];
 
@@ -130,7 +135,7 @@ namespace Com_Parser_2_client
                 ReceivedPacketIndex++;
 
                 // проверка контрольной суммы или стартовой метки
-                if ((!ValidateByChecksum && !IsStartMarkValid(buffer)) || (ValidateByChecksum && !ValidateChecksum(buffer)))
+                if ((!ValidateByChecksum && !IsStartMarkValid(buffer)) || (ValidateByChecksum && !ValidateChecksum(buffer, PacketSize)))
                 {
                     Console.WriteLine("Ошибка контрольной суммы на позиции {0}", stream.Position);
 
@@ -153,9 +158,9 @@ namespace Com_Parser_2_client
                 bytesRead += readed;
             }
 
-            sw.Stop();
-            Console.WriteLine("Время: {0} мс", sw.ElapsedMilliseconds);
-            ClientForm.StatusLogging.Info(String.Format("Время: {0} мс", sw.ElapsedMilliseconds));
+            //sw.Stop();
+            //Console.WriteLine("Время: {0} мс", sw.ElapsedMilliseconds);
+            //ClientForm.StatusLogging.Info(String.Format("Время: {0} мс", sw.ElapsedMilliseconds));
         }
     }
 }

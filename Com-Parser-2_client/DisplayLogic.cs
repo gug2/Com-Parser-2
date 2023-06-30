@@ -200,45 +200,6 @@ namespace Com_Parser_2_client
             }
         }
 
-        public void BeginParseStream(Stream stream)
-        {
-            if (PacketFormat == null || PacketType == null)
-            {
-                Console.WriteLine("Отсутствует формат пакета!");
-                ClientForm.StatusLogging.Error("Отсутствует формат пакета!");
-                return;
-            }
-        }
-
-        public void AddToStream(Stream stream, byte[] b)
-        {
-            stream.Write(b, 0, b.Length);
-
-            stream.Seek(0, SeekOrigin.Begin);
-            StreamPacketParser parser = new StreamPacketParser(stream, PacketFormat);
-
-            object filledStruct, outStruct;
-            parser.Parse(buffer =>
-            {
-                filledStruct = PacketFormat.MarshalDeserializeByArray(PacketType, buffer);
-                SuccessPackets++;
-
-                outStruct = PacketFormat.GetOutputStruct(filledStruct);
-
-                HandlePacket(parser, outStruct);
-            },
-            buffer =>
-            {
-                BrokenPackets++;
-            });
-        }
-
-        public void EndParseStream(Stream stream)
-        {
-            stream.Close();
-            stream.Dispose();
-        }
-
         private void Out(string msg, Stream stream)
         {
             byte[] array = Encoding.Default.GetBytes(msg);
@@ -285,6 +246,85 @@ namespace Com_Parser_2_client
                 }
 
                 Console.WriteLine("Загружен {0}", obj);
+            }
+        }
+
+        public const int PW_CHUNK_SIZE = 60*10;
+        private Queue<byte[]> chunkQueue = new Queue<byte[]>();
+        private Stream outStream;
+        public void InitPW()
+        {
+            SuccessPackets = 0;
+            BrokenPackets = 0;
+        }
+        public void SchedulePWChunk(System.ComponentModel.BackgroundWorker worker, byte[] chunk)
+        {
+            chunkQueue.Enqueue(chunk);
+
+            if (!worker.IsBusy)
+            {
+                worker.RunWorkerAsync();
+            }
+        }
+
+        public void DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            if (outStream == null)
+            {
+                outStream = File.Create("stream_out_" + DateTime.Now.ToLongTimeString().Replace(':', '_') + ".txt");
+                Console.WriteLine("файл записи открыт");
+            }
+
+            Console.WriteLine("Обработка буфера");
+            byte[] chunk;
+
+            using (Stream s = new MemoryStream())
+            {
+                while (chunkQueue.Count > 0)
+                {
+                    chunk = chunkQueue.Dequeue();
+                    s.Write(chunk, 0, chunk.Length);
+                }
+                s.Seek(0, SeekOrigin.Begin);
+
+                int sp = 0, bp = 0;
+                StreamPacketParser p = new StreamPacketParser(s, PacketFormat);
+                p.Parse(buffer =>
+                {
+                    SuccessPackets++;
+                    sp++;
+                    ClientForm.StatusLogging.Info(SuccessPackets + "/" + BrokenPackets);
+                    outStream.Write(buffer, 0, p.PacketSize);
+                },
+                buffer =>
+                {
+                    BrokenPackets++;
+                    bp++;
+                    ClientForm.StatusLogging.Info(SuccessPackets + "/" + BrokenPackets);
+                    outStream.Write(buffer, 0, p.PacketSize);
+
+                });
+                Console.WriteLine("обработано {0}/{1} пакетов", sp, bp);
+            }
+
+            outStream.Flush();
+            Console.WriteLine("сохранение");
+        }
+
+        public void FlushPW(System.ComponentModel.BackgroundWorker worker, byte[] flushed)
+        {
+            Console.WriteLine("сбрасываем остатки - длина {0}", flushed.Length);
+            SchedulePWChunk(worker, flushed);
+            while (worker.IsBusy);
+            StopPW();
+        }
+
+        public void StopPW()
+        {
+            if (outStream != null)
+            {
+                outStream.Close();
+                Console.WriteLine("файл записи закрыт");
             }
         }
     }

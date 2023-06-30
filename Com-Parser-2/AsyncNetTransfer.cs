@@ -27,9 +27,10 @@ namespace Com_Parser_2
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            foreach (TcpClient client in Clients)
+            for (int i = 0; i < Clients.Count; i++)
             {
-                client.Close();
+                Clients[i].Close();
+                Clients.RemoveAt(i);
             }
             tcpServer.Stop();
             MainForm.StatusLogging.Info("Сервер завершил работу");
@@ -100,9 +101,14 @@ namespace Com_Parser_2
 
         public void SendToAll(byte[] packet)
         {
-            foreach (TcpClient client in Clients)
+            if (!Worker.IsBusy)
             {
-                SendTo(client, packet);
+                return;
+            }
+
+            for (int i = 0; i < Clients.Count; i++)
+            {
+                SendTo(Clients[i], packet);
             }
         }
 
@@ -115,7 +121,6 @@ namespace Com_Parser_2
             }
 
             await client.GetStream().WriteAsync(packet, 0, packet.Length);
-            MainForm.StatusLogging.Info(String.Format("Отправка пакета \"{0}\"", BitConverter.ToString(packet)));
         }
 
         private bool IsSocketConnected(Socket socket)

@@ -13,41 +13,46 @@ namespace Com_Parser_2_client
         private NetTransferLogic netTransferLogic;
         private Stream netStream;
         private DisplayLogic displayLogic;
-        private BackgroundWorker parserWorker;
         private string fileForParse;
 
         public ClientForm()
         {
             InitializeComponent();
             StatusLogging = StatusLogging.From(StatusValue);
-        }
 
-        private void ClientForm_Load(object sender, EventArgs e)
-        {
-            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel);
-            parserWorker = new BackgroundWorker()
-            {
-                WorkerReportsProgress = true
-            };
-            parserWorker.ProgressChanged += (o, a) =>
+            ParserWorker.ProgressChanged += (o, a) =>
             {
                 ParsedFileProgress.Value = a.ProgressPercentage;
             };
-            parserWorker.DoWork += (o, a) =>
+            ParserWorker.DoWork += (o, a) =>
             {
-                displayLogic.ParseBinFile(parserWorker, fileForParse);
+                displayLogic.ParseBinFile(ParserWorker, fileForParse);
                 NetRxCount.Invoke(new EventHandler<int[]>(NetRxCountUpdating), NetRxCount, new int[] { displayLogic.SuccessPackets, displayLogic.BrokenPackets });
             };
 
             netTransferLogic = new NetTransferLogic(RemoteReceiveWorker);
             netTransferLogic.PacketReceived += (o, a) =>
             {
-                Invoke(new EventHandler<byte[]>(NetTransferLogic_PacketReceived), o, a);
+                NetTransferLogic_PacketReceived(o, a);
             };
             netTransferLogic.ServerDisconnecting += (o, a) =>
             {
+                byte[] flushed = new byte[last];
+                netStream.Seek(-flushed.Length, SeekOrigin.Current);
+                netStream.Read(flushed, 0, flushed.Length);
+                displayLogic.FlushPW(ParseStreamWorker, flushed);
                 Invoke(new EventHandler(NetTransferLogicServer_Disconnecting), o, a);
             };
+
+            ParseStreamWorker.DoWork += (o, a) =>
+            {
+                displayLogic.DoWork(o, a);
+            };
+        }
+
+        private void ClientForm_Load(object sender, EventArgs e)
+        {
+            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel);
 
             RemoteAddress.TextValidator((text) =>
             {
@@ -69,14 +74,25 @@ namespace Com_Parser_2_client
 
         private void NetTransferLogicServer_Disconnecting(object sender, EventArgs e)
         {
+            Console.WriteLine();
             DisconnectRemote(sender, e);
         }
 
-        private void NetTransferLogic_PacketReceived(object sender, byte[] e)
+        long last = 0;
+        byte[] chunkBuffer = new byte[DisplayLogic.PW_CHUNK_SIZE];
+        private void NetTransferLogic_PacketReceived(object sender, object[] e)
         {
-            StatusLogging.Info(String.Format("Принят пакет: {0}", BitConverter.ToString(e)));
+            netStream.Write((byte[])e[0], 0, (int)e[1]);
+            last += (int)e[1];
 
-            displayLogic.AddToStream(netStream, e);
+            if (last >= DisplayLogic.PW_CHUNK_SIZE)
+            {
+                netStream.Seek(-last, SeekOrigin.Current);
+                netStream.Read(chunkBuffer, 0, chunkBuffer.Length);
+                last = last - DisplayLogic.PW_CHUNK_SIZE;
+                netStream.Seek(last, SeekOrigin.Current);
+                displayLogic.SchedulePWChunk(ParseStreamWorker, chunkBuffer);
+            }
         }
 
         private void ClientForm_Layout(object sender, LayoutEventArgs e)
@@ -103,9 +119,6 @@ namespace Com_Parser_2_client
             {
                 await netTransferLogic.Connect(address, port);
 
-                netStream = new MemoryStream();
-                displayLogic.BeginParseStream(netStream);
-
                 ConnectToRemote.Click -= ConnectToRemote_Click;
                 ConnectToRemote.Click += DisconnectRemote;
                 ConnectToRemote.Text = "Отключить";
@@ -121,8 +134,6 @@ namespace Com_Parser_2_client
         private void DisconnectRemote(object sender, EventArgs e)
         {
             netTransferLogic.Disconnect();
-
-            displayLogic.EndParseStream(netStream);
 
             ConnectToRemote.Click -= DisconnectRemote;
             ConnectToRemote.Click += ConnectToRemote_Click;
@@ -238,6 +249,8 @@ namespace Com_Parser_2_client
                         // загрузка скрипта
                         PacketFormat format = new PacketFormat(script);
                         displayLogic.Load(format);
+                        netStream = new MemoryStream();
+                        displayLogic.InitPW();
                     }
                 }
             }
@@ -315,9 +328,9 @@ namespace Com_Parser_2_client
 
         private void ParseFile_Click(object sender, EventArgs e)
         {
-            if (!parserWorker.IsBusy)
+            if (!ParserWorker.IsBusy)
             {
-                parserWorker.RunWorkerAsync();
+                ParserWorker.RunWorkerAsync();
             }
         }
     }
