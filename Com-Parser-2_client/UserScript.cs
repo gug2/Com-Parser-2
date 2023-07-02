@@ -4,6 +4,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Com_Parser_2_client
 {
@@ -35,6 +36,7 @@ namespace Com_Parser_2_client
             if (elem != null)
             {
                 Console.WriteLine("Скрипт {0} уже загружен!", elem.FullName);
+                ClientForm.StatusLogging.Error(String.Format("Скрипт {0} уже загружен!", elem.FullName));
                 return false;
             }
 
@@ -63,15 +65,22 @@ namespace Com_Parser_2_client
 
             if (results.Errors.HasErrors)
             {
+                StringBuilder sb = new StringBuilder(String.Format("Ошибка компиляции для скрипта \"{0}\"", sourcePath));
                 Console.WriteLine("Ошибка компиляции для скрипта \"{0}\"", sourcePath);
+                
                 foreach (CompilerError error in results.Errors)
                 {
                     Console.WriteLine(error.ToString());
+                    sb.Append(error.ToString());
                 }
+
+                ClientForm.StatusLogging.Error(sb.ToString());
                 return false;
             }
 
             Console.WriteLine("Скрипт скомпилирован.");
+            ClientForm.StatusLogging.Info("Скрипт скомпилирован.");
+
             AssemblyPath = parameters.OutputAssembly;
 
             return true;

@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Com_Parser_2_client
 {
@@ -47,7 +46,7 @@ namespace Com_Parser_2_client
                 if (IsEqual(buffer, StartMark))
                 {
                     stream.Seek(-buffer.Length, SeekOrigin.Current);
-                    Console.WriteLine("Синхронизировались на позиции {0} (до стартовой метки)", stream.Position);
+                    //Console.WriteLine("Синхронизировались на позиции {0} (до стартовой метки)", stream.Position);
                     return true;
                 }
 

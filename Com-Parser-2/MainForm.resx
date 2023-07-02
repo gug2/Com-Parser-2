@@ -138,19 +138,6 @@
   <metadata name="label3.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>
   </metadata>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="ShowSerialSettings.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        wAAADsABataJCQAAAXtJREFUSEvt1TsvBFEYxvFxS9xCVC6FayIUEp9CgUSyejofQEmiQSl60UioJDQS
-        BSqVUqJx2QSFaMUl7vyfMa8cE5Pd2T0dT/JLZs6e8+7OmXdmg//kmwqUfB16y3fNbsygTSee0gjV7NPJ
-        BZ6wjUoNFJlSbEI1LzXw4VhFHQpNNZbg1gy/yU4eMAdNTBtd/TTuYfXeEBbUgQ3eYQJpM44bWB1ZRFAP
-        bc0L7INXZFCGXNGcQejq3fXraECYTuzAJsgVhqGblhS14QDO4a7dRw9+pBlHsEnvOEYvktKFQ2iurTtB
-        B36NngkVdRfoS1sQj3r9ADZPa7LoR2K0HUPQ9thC2YN+raUVW3DnXGMUOe+bJoxAN8oWqwHWoIaoxXI0
-        Zp9r7hjKkXfUqrewImrleUxFxzauvp9E6lRhFvH2c3/5IxZQg4Ki18YKrGDcBrRtRUWvAN3QZ6hTRFeh
-        XvfxcgyjV/kuVFz7r65qh7foiW3CKc6iY99/UH8zQfAJsvGBsHov3ooAAAAASUVORK5CYII=
-</value>
-  </data>
   <metadata name="SerialPort_TS_Group.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>
   </metadata>
