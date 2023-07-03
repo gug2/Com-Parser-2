@@ -40,7 +40,7 @@ namespace Com_Parser_2_client
                 byte[] flushed = new byte[last];
                 netStream.Seek(-flushed.Length, SeekOrigin.Current);
                 netStream.Read(flushed, 0, flushed.Length);
-                displayLogic.FlushPW(ParseStreamWorker, flushed);
+                displayLogic.FlushParsingStream(ParseStreamWorker, flushed);
                 Invoke(new EventHandler(NetTransferLogicServer_Disconnecting), o, a);
             };
 
@@ -91,7 +91,7 @@ namespace Com_Parser_2_client
                 netStream.Read(chunkBuffer, 0, chunkBuffer.Length);
                 last = last - DisplayLogic.PW_CHUNK_SIZE;
                 netStream.Seek(last, SeekOrigin.Current);
-                displayLogic.SchedulePWChunk(ParseStreamWorker, chunkBuffer);
+                displayLogic.ScheduleParsingChunk(ParseStreamWorker, chunkBuffer);
             }
         }
 
@@ -250,7 +250,10 @@ namespace Com_Parser_2_client
                         PacketFormat format = new PacketFormat(script);
                         displayLogic.Load(format);
                         netStream = new MemoryStream();
-                        displayLogic.InitPW();
+                        displayLogic.InitParsingStream();
+
+                        //ToolStripItem item = new ToolStripMenuItem();
+                        //Format_TS.GetCurrentParent().Items.Add(script.AssemblyPath);
                     }
                 }
             }

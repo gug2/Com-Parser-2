@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Net.Sockets;
@@ -104,7 +105,7 @@ namespace Com_Parser_2
             SerialPort port = sender as SerialPort;
 
             RxCount = 0;
-            asyncDataLogging = new AsyncDataLogging("log_" + DateTime.Now.ToString().Replace(':', '_') + LOGFILE_EXTENSION);
+            asyncDataLogging = new AsyncDataLogging("log_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + LOGFILE_EXTENSION);
 
             port.DataReceived += Port_DataReceived;
 

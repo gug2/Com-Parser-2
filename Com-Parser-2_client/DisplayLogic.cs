@@ -76,7 +76,7 @@ namespace Com_Parser_2_client
 
         private void AddChartFor(DataObject dataObject)
         {
-            Chart chart = new Chart() { BackColor = Color.Gray };
+            Chart chart = new Chart() { BackColor = Color.LightGray };
             ChartArea area = new ChartArea() { Name = "chartArea" };
             Legend legend = new Legend("legend") { DockedToChartArea = area.Name };
             Series series = new Series(dataObject.Name, 1) { ChartArea = area.Name, ChartType = SeriesChartType.Line, Legend = legend.Name };
@@ -252,12 +252,12 @@ namespace Com_Parser_2_client
         public const int PW_CHUNK_SIZE = 60*10;
         private Queue<byte[]> chunkQueue = new Queue<byte[]>();
         private Stream outStream;
-        public void InitPW()
+        public void InitParsingStream()
         {
             SuccessPackets = 0;
             BrokenPackets = 0;
         }
-        public void SchedulePWChunk(System.ComponentModel.BackgroundWorker worker, byte[] chunk)
+        public void ScheduleParsingChunk(System.ComponentModel.BackgroundWorker worker, byte[] chunk)
         {
             chunkQueue.Enqueue(chunk);
 
@@ -271,7 +271,7 @@ namespace Com_Parser_2_client
         {
             if (outStream == null)
             {
-                outStream = File.Create("stream_out_" + DateTime.Now.ToLongTimeString().Replace(':', '_') + ".txt");
+                outStream = File.Create("stream_out_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".txt");
                 Console.WriteLine("файл записи открыт");
             }
 
@@ -311,15 +311,15 @@ namespace Com_Parser_2_client
             Console.WriteLine("сохранение");
         }
 
-        public void FlushPW(System.ComponentModel.BackgroundWorker worker, byte[] flushed)
+        public void FlushParsingStream(System.ComponentModel.BackgroundWorker worker, byte[] flushed)
         {
             Console.WriteLine("сбрасываем остатки - длина {0}", flushed.Length);
-            SchedulePWChunk(worker, flushed);
+            ScheduleParsingChunk(worker, flushed);
             while (worker.IsBusy);
-            StopPW();
+            StopParsingStream();
         }
 
-        public void StopPW()
+        public void StopParsingStream()
         {
             if (outStream != null)
             {
