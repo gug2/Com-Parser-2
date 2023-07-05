@@ -78,7 +78,7 @@ namespace Com_Parser_2_client
         {
             Chart chart = new Chart() { BackColor = Color.LightGray };
             ChartArea area = new ChartArea() { Name = "chartArea" };
-            Legend legend = new Legend("legend") { DockedToChartArea = area.Name };
+            Legend legend = new Legend("legend") { Docking = Docking.Bottom, Alignment = StringAlignment.Far, DockedToChartArea = area.Name };
             Series series = new Series(dataObject.Name, 1) { ChartArea = area.Name, ChartType = SeriesChartType.Line, Legend = legend.Name };
             chart.ChartAreas.Add(area);
             chart.Legends.Add(legend);
@@ -289,10 +289,16 @@ namespace Com_Parser_2_client
 
                 int sp = 0, bp = 0;
                 StreamPacketParser p = new StreamPacketParser(s, PacketFormat);
+                object outStruct, filledStruct;
                 p.Parse(buffer =>
                 {
+                    filledStruct = PacketFormat.MarshalDeserializeByArray(PacketType, buffer);
+                    outStruct = PacketFormat.GetOutputStruct(filledStruct);
+
                     SuccessPackets++;
                     sp++;
+
+                    HandlePacket(p, outStruct);
                     ClientForm.StatusLogging.Info(SuccessPackets + "/" + BrokenPackets);
                     outStream.Write(buffer, 0, p.PacketSize);
                 },

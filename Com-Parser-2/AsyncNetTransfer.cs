@@ -38,6 +38,11 @@ namespace Com_Parser_2
 
         public void Start()
         {
+            if (Worker.IsBusy)
+            {
+                return;
+            }
+
             Worker.RunWorkerAsync();
         }
 
@@ -127,15 +132,5 @@ namespace Com_Parser_2
         {
             return !(socket.Poll(1000, SelectMode.SelectRead) && socket.Available == 0);
         }
-
-        /*public async Task Handle(byte[] buffer)
-        {
-            Socket client = Clients[0];
-
-            await Task.Factory.FromAsync(
-                client.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, null, client),
-                client.EndSend
-            ).ConfigureAwait(false);
-        }*/
     }
 }

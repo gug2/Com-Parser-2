@@ -365,7 +365,6 @@ namespace Com_Parser_2
             this.SendPacket.TabIndex = 10;
             this.SendPacket.Text = "Отправить";
             this.SendPacket.UseVisualStyleBackColor = true;
-            this.SendPacket.Click += new System.EventHandler(this.SendPacket_Click);
             // 
             // StopServer
             // 

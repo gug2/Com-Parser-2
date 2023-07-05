@@ -6,6 +6,8 @@ using System.IO.Ports;
 using System.Linq;
 using System.Net.Sockets;
 using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Com_Parser_2
 {
@@ -104,46 +106,14 @@ namespace Com_Parser_2
         {
             SerialPort port = sender as SerialPort;
 
-            RxCount = 0;
-            asyncDataLogging = new AsyncDataLogging("log_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + LOGFILE_EXTENSION);
-
             port.DataReceived += Port_DataReceived;
-
-            if (!PacketPerSecTimer.Enabled)
-            {
-                PacketPerSecTimer.Start();
-            }
-
-            StatusLogging.Info(String.Format("Порт {0} открыт.", port.PortName));
-
-            ConnectToSerial.Click -= ConnectToSerial_Click;
-            ConnectToSerial.Click += ClosePort;
-            ConnectToSerial.Text = "Откл.";
-
-            SerialStatus.Text = "Подключено";
-            SerialStatus.ForeColor = Color.Green;
         }
 
         private void PortLogic_Closing(object sender, EventArgs e)
         {
             SerialPort port = sender as SerialPort;
 
-            if (PacketPerSecTimer.Enabled)
-            {
-                PacketPerSecTimer.Stop();
-            }
-
             port.DataReceived -= Port_DataReceived;
-
-            asyncDataLogging.Dispose();
-            StatusLogging.Info(String.Format("Порт закрыт."));
-
-            ConnectToSerial.Click -= ClosePort;
-            ConnectToSerial.Click += ConnectToSerial_Click;
-            ConnectToSerial.Text = "Подкл.";
-
-            SerialStatus.Text = "Отключено";
-            SerialStatus.ForeColor = Color.Red;
         }
 
         private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -155,8 +125,7 @@ namespace Com_Parser_2
 
             port.Read(b, 0, b.Length);
 
-            var asyncWrite = asyncDataLogging.Write(b);
-            var asyncFlush = asyncDataLogging.Flush();
+            asyncDataLogging.Write(b);
             asyncNetTransfer.SendToAll(b);
 
             Invoke(new EventHandler((obj, args) =>
@@ -164,30 +133,6 @@ namespace Com_Parser_2
                 RxCount++;
                 PacketPerSec++;
             }), this, EventArgs.Empty);
-            /*byte[] bytes = new byte[GlobalFields.MESSAGE_SIZE];
-
-            if (port.BytesToRead < bytes.Length)
-            {
-                return;
-            }
-
-            port.Read(bytes, 0, bytes.Length);
-
-            System.Text.StringBuilder builder = new System.Text.StringBuilder();
-            foreach (byte b in bytes)
-            {
-                if (this.serialHexMode.Checked)
-                {
-                    builder.Append(b.ToString("X").PadLeft(2, '0') + " ");
-                }
-                else
-                {
-                    builder.Append((char)b == '\0' ? "end" : " " + (char)b);
-                }
-            }
-
-            string data = builder.ToString();*/
-            //this.serialDataArea.Invoke(this.serialDataDisplayHandler, new object[] { null });
         }
 
         private void ScanPorts()
@@ -224,6 +169,23 @@ namespace Com_Parser_2
             try
             {
                 portLogic.Connect(name, settings);
+
+                RxCount = 0;
+                asyncDataLogging = new AsyncDataLogging("log_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + LOGFILE_EXTENSION);
+
+                if (!PacketPerSecTimer.Enabled)
+                {
+                    PacketPerSecTimer.Start();
+                }
+
+                StatusLogging.Info(String.Format("Порт {0} открыт.", name));
+
+                ConnectToSerial.Click -= ConnectToSerial_Click;
+                ConnectToSerial.Click += ClosePort;
+                ConnectToSerial.Text = "Откл.";
+
+                SerialStatus.Text = "Подключено";
+                SerialStatus.ForeColor = Color.Green;
             }
             catch (Exception e)
             {
@@ -236,6 +198,21 @@ namespace Com_Parser_2
             try
             {
                 portLogic.Disconnect();
+
+                if (PacketPerSecTimer.Enabled)
+                {
+                    PacketPerSecTimer.Stop();
+                }
+
+                asyncDataLogging.Dispose();
+                StatusLogging.Info(String.Format("Порт закрыт."));
+
+                ConnectToSerial.Click -= ClosePort;
+                ConnectToSerial.Click += ConnectToSerial_Click;
+                ConnectToSerial.Text = "Подкл.";
+
+                SerialStatus.Text = "Отключено";
+                SerialStatus.ForeColor = Color.Red;
             }
             catch (Exception e)
             {
@@ -281,7 +258,6 @@ namespace Com_Parser_2
         {
             ConnectedClients.Items.Clear();
             asyncNetTransfer.Start();
-            SendPacket.Enabled = true;
             StartServer.Enabled = false;
             StopServer.Enabled = true;
         }
@@ -289,29 +265,8 @@ namespace Com_Parser_2
         private void StopServer_Click(object sender, EventArgs e)
         {
             asyncNetTransfer.Stop();
-            SendPacket.Enabled = false;
             StartServer.Enabled = true;
             StopServer.Enabled = false;
-        }
-
-        private void SendPacket_Click(object sender, EventArgs e)
-        {
-            char startMark = '$';
-            byte[] packet = new byte[60];
-
-            Random r = new Random();
-            r.NextBytes(packet);
-            packet[0] = (byte)startMark;
-
-            byte hor = packet[0];
-            
-            for (int i = 1; i < packet.Length - 1; i++)
-            {
-                hor ^= packet[i];
-            }
-            packet[packet.Length - 1] = hor;
-
-            asyncNetTransfer.SendToAll(packet);
         }
 
         private void flowLayoutPanel1_ClientSizeChanged(object sender, EventArgs e)

@@ -3,8 +3,8 @@ public class Script
 	public static byte[] StartMarkPattern = new byte[] { 0xAA, 0xAA };
 	public static bool ValidateByChecksum = true;
 	
-	const float Lsm6_A_Scale = 1.0F;
-	const float Lsm6_G_Scale = 1.0F;
+	const float Lsm6_A_Scale = 4.0F;
+	const float Lsm6_G_Scale = 500.0F;
 	const float Lsm303_A_Scale = 1.0F;
 	
 	public struct inData
@@ -28,12 +28,16 @@ public class Script
 		public byte lsm303mx_M, lsm303mx_L;
 		public byte lsm303my_M, lsm303my_L;
 		public byte lsm303mz_M, lsm303mz_L;
+		public short ds18;
 		public int ms56pres;
 		public short ms56temp;
-		public int eps1;
-		public int eps2;
-		public int eps3;
-		public byte checksum_final;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
+		public byte[] epsData;
+		public byte heaterState;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)]
+		public byte[] zeros;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+		public byte[] gps;
 	};
 	
 	public struct outData
@@ -57,12 +61,16 @@ public class Script
 		public short lsm303mx_MSB;
 		public short lsm303my_MSB;
 		public short lsm303mz_MSB;
+		public short pt_dec_ds18;
 		public int pp_ms56pres_plot8;
 		public short pp_ms56temp_plot9;
-		public int eps1;
-		public int eps2;
-		public int eps3;
-		public byte pt_hex_checksum_final;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
+		public byte[] epsData;
+		public byte pt_dec_heaterState;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)]
+		public byte[] zeros;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
+		public byte[] gps;
 	};
 	
 	public static void ProcessData(object inputObj, out object outObj)
@@ -88,12 +96,13 @@ public class Script
 			lsm303ax = i.lsm303ax / 32768.0F * Lsm303_A_Scale,
 			lsm303ay = i.lsm303ay / 32768.0F * Lsm303_A_Scale,
 			lsm303az = i.lsm303az / 32768.0F * Lsm303_A_Scale,
+			pt_dec_ds18 = i.ds18,
 			pp_ms56pres_plot8 = i.ms56pres,
 			pp_ms56temp_plot9 = i.ms56temp,
-			eps1 = i.eps1,
-			eps2 = i.eps2,
-			eps3 = i.eps3,
-			pt_hex_checksum_final = i.checksum_final
+			epsData = i.epsData,
+			pt_dec_heaterState = i.heaterState,
+			zeros = i.zeros,
+			gps = i.gps
 		};
 		
 		// swap bytes

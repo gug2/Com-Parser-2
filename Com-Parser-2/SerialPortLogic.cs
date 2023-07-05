@@ -28,6 +28,15 @@ namespace Com_Parser_2
 
         public bool Poll()
         {
+            if (Port == null)
+            {
+                return false;
+            }
+            if (Port.IsOpen)
+            {
+                return false;
+            }
+
             try
             {
                 // проверяем не оборвалось ли соединение с последовательным портом
@@ -39,6 +48,11 @@ namespace Com_Parser_2
                 {
                     Closing.Invoke(Port, EventArgs.Empty);
                 }
+
+#warning maybe crash
+                Port.Close();
+                Port.Dispose();
+                Port = null;
 
                 return false;
             }
@@ -72,7 +86,11 @@ namespace Com_Parser_2
 
         public void Disconnect()
         {
-            if (Port == null || !Port.IsOpen)
+            if (Port == null)
+            {
+                return;
+            }
+            if (!Port.IsOpen)
             {
                 return;
             }

@@ -96,7 +96,12 @@ namespace Com_Parser_2_client
 
         public void Disconnect()
         {
-            if (tcpClient == null || !tcpClient.Connected)
+            if (tcpClient == null)
+            {
+                return;
+            }
+
+            if (!tcpClient.Connected)
             {
                 return;
             }

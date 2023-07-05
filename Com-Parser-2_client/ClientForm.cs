@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Com_Parser_2_client
 {
@@ -14,6 +15,9 @@ namespace Com_Parser_2_client
         private Stream netStream;
         private DisplayLogic displayLogic;
         private string fileForParse;
+
+        int last;
+        byte[] chunkBuffer = new byte[DisplayLogic.PW_CHUNK_SIZE];
 
         public ClientForm()
         {
@@ -74,12 +78,9 @@ namespace Com_Parser_2_client
 
         private void NetTransferLogicServer_Disconnecting(object sender, EventArgs e)
         {
-            Console.WriteLine();
             DisconnectRemote(sender, e);
         }
 
-        long last = 0;
-        byte[] chunkBuffer = new byte[DisplayLogic.PW_CHUNK_SIZE];
         private void NetTransferLogic_PacketReceived(object sender, object[] e)
         {
             netStream.Write((byte[])e[0], 0, (int)e[1]);
@@ -89,7 +90,7 @@ namespace Com_Parser_2_client
             {
                 netStream.Seek(-last, SeekOrigin.Current);
                 netStream.Read(chunkBuffer, 0, chunkBuffer.Length);
-                last = last - DisplayLogic.PW_CHUNK_SIZE;
+                last -= DisplayLogic.PW_CHUNK_SIZE;
                 netStream.Seek(last, SeekOrigin.Current);
                 displayLogic.ScheduleParsingChunk(ParseStreamWorker, chunkBuffer);
             }
@@ -251,9 +252,6 @@ namespace Com_Parser_2_client
                         displayLogic.Load(format);
                         netStream = new MemoryStream();
                         displayLogic.InitParsingStream();
-
-                        //ToolStripItem item = new ToolStripMenuItem();
-                        //Format_TS.GetCurrentParent().Items.Add(script.AssemblyPath);
                     }
                 }
             }
@@ -266,7 +264,7 @@ namespace Com_Parser_2_client
                 dialog.CheckPathExists = true;
                 dialog.CheckFileExists = true;
                 dialog.Multiselect = false;
-                dialog.Filter = "Двоичные данные (*.txt;*.bin;*.dat)|*.txt;*.bin;*.dat;";
+                dialog.Filter = "Двоичные данные (*.txt;*.bin;*.dat;*.log)|*.txt;*.bin;*.dat;*.log;";
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {

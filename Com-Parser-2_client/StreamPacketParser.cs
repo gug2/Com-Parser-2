@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -13,7 +12,6 @@ namespace Com_Parser_2_client
 
         public int ReceivedPacketIndex { private set; get; }
 
-        private readonly Stopwatch sw = new Stopwatch();
         private readonly Stream stream;
 
         public StreamPacketParser(Stream source, PacketFormat packetFormat)
@@ -68,10 +66,11 @@ namespace Com_Parser_2_client
                 return false;
             }
 
-            byte checksumReceived = packet[packetSize - 1];
+            int checksumPosition = 26;
+            byte checksumReceived = packet[checksumPosition];
 
             byte checksum = packet[0];
-            for (int i = 1; i < packetSize - 1; i++)
+            for (int i = 1; i < checksumPosition; i++)
             {
                 checksum ^= packet[i];
             }
@@ -92,6 +91,7 @@ namespace Com_Parser_2_client
                 if (packet[i] != StartMark[i])
                 {
                     flag = false;
+                    break;
                 }
             }
 
@@ -100,8 +100,6 @@ namespace Com_Parser_2_client
 
         public void Parse(Action<byte[]> packetHandling, Action<byte[]> brokenPacketHandling)
         {
-            //sw.Restart();
-
             byte[] buffer = new byte[512];
 
             long totalSize = stream.Length;
@@ -134,7 +132,7 @@ namespace Com_Parser_2_client
                 ReceivedPacketIndex++;
 
                 // проверка контрольной суммы или стартовой метки
-                if ((!ValidateByChecksum && !IsStartMarkValid(buffer)) || (ValidateByChecksum && !ValidateChecksum(buffer, PacketSize)))
+                if (!IsStartMarkValid(buffer) || (ValidateByChecksum && !ValidateChecksum(buffer, PacketSize)))
                 {
                     Console.WriteLine("Ошибка контрольной суммы на позиции {0}", stream.Position);
 
@@ -156,10 +154,6 @@ namespace Com_Parser_2_client
 
                 bytesRead += readed;
             }
-
-            //sw.Stop();
-            //Console.WriteLine("Время: {0} мс", sw.ElapsedMilliseconds);
-            //ClientForm.StatusLogging.Info(String.Format("Время: {0} мс", sw.ElapsedMilliseconds));
         }
     }
 }

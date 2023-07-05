@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Com_Parser_2
 {
     class AsyncDataLogging : IDisposable
     {
-        private const int FLUSH_BUFFER_SIZE = 1024;
+        private const int FLUSH_BUFFER_SIZE = 1024; //1kb
         private readonly Stream stream;
+        private int bufferSize;
 
         public AsyncDataLogging(string logPath)
         {
@@ -31,17 +34,17 @@ namespace Com_Parser_2
             }
         }
 
-        public async Task Flush()
+        public void Write(byte[] data)
         {
-            if (stream.Length >= FLUSH_BUFFER_SIZE)
-            {
-                await stream.FlushAsync();
-            }
-        }
+            stream.Write(data, 0, data.Length);
+            bufferSize += data.Length;
 
-        public async Task Write(byte[] data)
-        {
-            await stream.WriteAsync(data, 0, data.Length);
+            if (bufferSize >= FLUSH_BUFFER_SIZE)
+            {
+                stream.Flush();
+                Console.WriteLine("сохранение... " + "," + Process.GetCurrentProcess().Threads.Count);
+                bufferSize -= FLUSH_BUFFER_SIZE;
+            }
         }
     }
 }
