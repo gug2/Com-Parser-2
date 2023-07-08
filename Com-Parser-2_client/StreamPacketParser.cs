@@ -66,7 +66,7 @@ namespace Com_Parser_2_client
                 return false;
             }
 
-            int checksumPosition = 26;
+            int checksumPosition = 26;//62;
             byte checksumReceived = packet[checksumPosition];
 
             byte checksum = packet[0];
@@ -116,6 +116,16 @@ namespace Com_Parser_2_client
             while (bytesRead < totalSize)
             {
                 readed = stream.Read(buffer, 0, PacketSize);
+
+#warning замена знаков 0x20 на нули
+                // замена знаков 0x20 на нули
+                /*for (int i = 0; i < readed; i++)
+                {
+                    if (buffer[i] == 0x20)
+                    {
+                        buffer[i] = 0;
+                    }
+                }*/
 
                 // проверка длины пакета
                 if (readed == 0)

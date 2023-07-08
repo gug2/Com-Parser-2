@@ -66,6 +66,16 @@ namespace Com_Parser_2_client
 
         private void DisplayToChart(string name, object x, object y)
         {
+            if (Time == null || name == Time.Name)
+            {
+                Charts[name].ChartAreas[0].AxisX.Title = "Пакеты";
+            }
+            else
+            {
+                Charts[name].ChartAreas[0].AxisX.Title = "Время";
+            }
+
+            Charts[name].ChartAreas[0].AxisY.Title = name;
             Charts[name].Series[0].Points.AddXY(x, y);
         }
 
