@@ -1,168 +1,130 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
 
 namespace Com_Parser_2_client
 {
     class StreamPacketParser
     {
-        public byte[] StartMark { set; get; }
-        public int PacketSize { set; get; }
-        public bool ValidateByChecksum { set; get; }
+        private const int PACKETS_IN_CHUNK = 10;
+        private readonly int chunkSize;
+        private readonly Queue<byte[]> chunkQueue = new Queue<byte[]>();
+        private Stream outStream;
+        private PacketParser p;
+        private readonly BackgroundWorker worker;
+        private int SuccessPackets, BrokenPackets;
+        private readonly Stream netStream;
+        private int last;
+        private readonly byte[] chunkBuffer;
 
-        public int ReceivedPacketIndex { private set; get; }
-
-        private readonly Stream stream;
-
-        public StreamPacketParser(Stream source, PacketFormat packetFormat)
+        public StreamPacketParser(BackgroundWorker worker, DisplayLogic displayLogic, PacketFormat format)
         {
-            stream = source;
-            StartMark = packetFormat.StartMarkPattern;
-            PacketSize = packetFormat.PacketSize;
-            ValidateByChecksum = packetFormat.ValidateByChecksum;
+            this.worker = worker;
+            chunkSize = format.PacketSize * PACKETS_IN_CHUNK;
+
+            netStream = new MemoryStream();
+            chunkBuffer = new byte[chunkSize];
+            SuccessPackets = 0;
+            BrokenPackets = 0;
+
+            int sp = 0, bp = 0;
+            object filledStruct, outStruct;
+            p = new PacketParser(format);
+            p.Use(buffer =>
+            {
+                filledStruct = format.MarshalDeserialize(buffer);
+                outStruct = format.GetOutputStruct(filledStruct);
+
+                SuccessPackets++;
+                sp++;
+
+                displayLogic.HandlePacket(p, outStruct);
+                ClientForm.StatusLogging.Info(SuccessPackets + "/" + BrokenPackets);
+                outStream.Write(buffer, 0, p.packetFormat.PacketSize);
+            },
+            buffer =>
+            {
+                BrokenPackets++;
+                bp++;
+                ClientForm.StatusLogging.Info(SuccessPackets + "/" + BrokenPackets);
+                outStream.Write(buffer, 0, p.packetFormat.PacketSize);
+            });
+
+            worker.DoWork += ProcessChunk;
         }
 
-        private bool IsEqual(byte[] arrA, byte[] arrB)
+        public void ScheduleChunk(byte[] data, int len)
         {
-            return Enumerable.SequenceEqual(arrA, arrB);
-        }
+            netStream.Write(data, 0, len);
+            last += len;
 
-        // ожидание синхронизации приема (ожидаем стартовую метку)
-        private bool WaitForSync()
-        {
-            if (StartMark.Length == 0)
-            {
-                return true;
-            }
-
-            byte[] buffer = new byte[StartMark.Length];
-            while (stream.Position < stream.Length - buffer.Length + 1)
-            {
-                stream.Read(buffer, 0, buffer.Length);
-
-                // нашли стартовую метку, откатываемся на позицию до этой метки
-                if (IsEqual(buffer, StartMark))
-                {
-                    stream.Seek(-buffer.Length, SeekOrigin.Current);
-                    //Console.WriteLine("Синхронизировались на позиции {0} (до стартовой метки)", stream.Position);
-                    return true;
-                }
-
-                // если не нашли, переходим на следующий байт
-                if (buffer.Length > 1)
-                {
-                    stream.Seek(-buffer.Length + 1, SeekOrigin.Current);
-                }
-            }
-
-            Console.WriteLine("Не удалось синхронизироваться с потоком данных!");
-            return false;
-        }
-
-        private bool ValidateChecksum(byte[] packet, int packetSize)
-        {
-            if (packetSize < 2)
-            {
-                return false;
-            }
-
-            int checksumPosition = 26;//62;
-            byte checksumReceived = packet[checksumPosition];
-
-            byte checksum = packet[0];
-            for (int i = 1; i < checksumPosition; i++)
-            {
-                checksum ^= packet[i];
-            }
-
-            return checksum == checksumReceived;
-        }
-
-        private bool IsStartMarkValid(byte[] packet)
-        {
-            if (packet.Length < StartMark.Length)
-            {
-                return false;
-            }
-
-            bool flag = true;
-            for (int i = 0; i < StartMark.Length; i++)
-            {
-                if (packet[i] != StartMark[i])
-                {
-                    flag = false;
-                    break;
-                }
-            }
-
-            return flag;
-        }
-
-        public void Parse(Action<byte[]> packetHandling, Action<byte[]> brokenPacketHandling)
-        {
-            byte[] buffer = new byte[512];
-
-            long totalSize = stream.Length;
-            long bytesRead = 0;
-            int readed;
-
-            bool sync = WaitForSync();
-
-            if (!sync)
+            if (last < chunkSize)
             {
                 return;
             }
 
-            while (bytesRead < totalSize)
+            netStream.Seek(-last, SeekOrigin.Current);
+            netStream.Read(chunkBuffer, 0, chunkBuffer.Length);
+            last -= chunkSize;
+            netStream.Seek(last, SeekOrigin.Current);
+
+            chunkQueue.Enqueue(chunkBuffer);
+
+            if (!worker.IsBusy)
             {
-                readed = stream.Read(buffer, 0, PacketSize);
+                worker.RunWorkerAsync();
+            }
+        }
 
-#warning замена знаков 0x20 на нули
-                // замена знаков 0x20 на нули
-                /*for (int i = 0; i < readed; i++)
-                {
-                    if (buffer[i] == 0x20)
-                    {
-                        buffer[i] = 0;
-                    }
-                }*/
+        public void ProcessChunk(object sender, DoWorkEventArgs e)
+        {
+            if (outStream == null)
+            {
+                outStream = File.Create("stream_out_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".txt");
+                Console.WriteLine("файл записи открыт");
+            }
 
-                // проверка длины пакета
-                if (readed == 0)
+            Console.WriteLine("Обработка буфера");
+            byte[] chunk;
+
+            using (Stream s = new MemoryStream())
+            {
+                while (chunkQueue.Count > 0)
                 {
-                    Console.WriteLine("Конец потока");
-                    return;
+                    chunk = chunkQueue.Dequeue();
+                    s.Write(chunk, 0, chunk.Length);
                 }
-                if (readed != PacketSize)
-                {
-                    bytesRead += readed;
-                    continue;
-                }
+                s.Seek(0, SeekOrigin.Begin);
 
-                ReceivedPacketIndex++;
+                p.Source(s);
+                p.Parse();
+                Console.WriteLine("обработано {0}/{1} пакетов", SuccessPackets, BrokenPackets);
+            }
 
-                // проверка контрольной суммы или стартовой метки
-                if (!IsStartMarkValid(buffer) || (ValidateByChecksum && !ValidateChecksum(buffer, PacketSize)))
-                {
-                    Console.WriteLine("Ошибка контрольной суммы на позиции {0}", stream.Position);
+            outStream.Flush();
+            Console.WriteLine("сохранение");
+        }
 
-                    brokenPacketHandling(buffer);
+        public void FlushParser()
+        {
+            byte[] flushed = new byte[last];
+            netStream.Seek(-flushed.Length, SeekOrigin.Current);
+            netStream.Read(flushed, 0, flushed.Length);
 
-                    if (!WaitForSync())
-                    {
-                        Console.WriteLine("Ошибка синхронизации");
-                        return;
-                    }
-                    else
-                    {
-                        // синхронизировались, повторяем попытку чтения пакета
-                        continue;
-                    }
-                }
+            Console.WriteLine("сбрасываем остатки - длина {0}", flushed.Length);
 
-                packetHandling(buffer);
+            ScheduleChunk(flushed, flushed.Length);
+            while (worker.IsBusy);
+            StopParser();
+        }
 
-                bytesRead += readed;
+        private void StopParser()
+        {
+            if (outStream != null)
+            {
+                outStream.Close();
+                Console.WriteLine("файл записи закрыт");
             }
         }
     }

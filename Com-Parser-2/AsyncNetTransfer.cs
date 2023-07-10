@@ -10,7 +10,7 @@ namespace Com_Parser_2
     class AsyncNetTransfer
     {
         const int BACKLOG = 5;
-        const int ACCEPT_CLIENT_DELAY_MS = 10;
+        const int ACCEPT_CLIENT_DELAY_MS = 100;
         public List<TcpClient> Clients = new List<TcpClient>();
         private TcpListener tcpServer;
 

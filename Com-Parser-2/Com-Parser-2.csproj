@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncNetTransfer.cs" />
-    <Compile Include="AsyncDataLogging.cs" />
+    <Compile Include="DataLogging.cs" />
     <Compile Include="LabelFormat.cs">
       <SubType>Component</SubType>
     </Compile>

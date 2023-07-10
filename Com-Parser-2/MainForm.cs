@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace Com_Parser_2
 {
@@ -19,22 +16,10 @@ namespace Com_Parser_2
         public static StatusLogging StatusLogging;
 
         private readonly SerialPortLogic portLogic = SerialPortLogic.Instance;
-        private AsyncDataLogging asyncDataLogging;
+        private DataLogging dataLogging;
         private AsyncNetTransfer asyncNetTransfer;
-        private int RxCountField;
-        private int PacketPerSec;
-        private int RxCount
-        {
-            set
-            {
-                RxCountField = value;
-                SerialRxCount.SetFormatArgs(value);
-            }
-            get
-            {
-                return RxCountField;
-            }
-        }
+        private int BytesPerSec;
+        private int RxCount;
 
         public MainForm()
         {
@@ -125,14 +110,14 @@ namespace Com_Parser_2
 
             port.Read(b, 0, b.Length);
 
-            asyncDataLogging.Write(b);
+            dataLogging.Write(b);
             asyncNetTransfer.SendToAll(b);
 
-            Invoke(new EventHandler((obj, args) =>
+            Invoke(new EventHandler<int>((obj, args) =>
             {
-                RxCount++;
-                PacketPerSec++;
-            }), this, EventArgs.Empty);
+                SerialRxCount.SetFormatArgs(RxCount++);
+                BytesPerSec += args;
+            }), this, b.Length);
         }
 
         private void ScanPorts()
@@ -171,11 +156,12 @@ namespace Com_Parser_2
                 portLogic.Connect(name, settings);
 
                 RxCount = 0;
-                asyncDataLogging = new AsyncDataLogging("log_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + LOGFILE_EXTENSION);
+                SerialRxCount.SetFormatArgs(RxCount);
+                dataLogging = new DataLogging("log_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + LOGFILE_EXTENSION);
 
-                if (!PacketPerSecTimer.Enabled)
+                if (!BytesPerSecTimer.Enabled)
                 {
-                    PacketPerSecTimer.Start();
+                    BytesPerSecTimer.Start();
                 }
 
                 StatusLogging.Info(String.Format("Порт {0} открыт.", name));
@@ -199,12 +185,12 @@ namespace Com_Parser_2
             {
                 portLogic.Disconnect();
 
-                if (PacketPerSecTimer.Enabled)
+                if (BytesPerSecTimer.Enabled)
                 {
-                    PacketPerSecTimer.Stop();
+                    BytesPerSecTimer.Stop();
                 }
 
-                asyncDataLogging.Dispose();
+                dataLogging.Dispose();
                 StatusLogging.Info(String.Format("Порт закрыт."));
 
                 ConnectToSerial.Click -= ClosePort;
@@ -230,10 +216,10 @@ namespace Com_Parser_2
             OpenPort(sender, e);
         }
 
-        private void PacketPerSecTimer_Tick(object sender, EventArgs e)
+        private void BytesPerSecTimer_Tick(object sender, EventArgs e)
         {
-            PacketPerSecCount.SetFormatArgs(PacketPerSec);
-            PacketPerSec = 0;
+            BytesPerSecCount.SetFormatArgs(BytesPerSec);
+            BytesPerSec = 0;
 
             portLogic.Poll();
         }

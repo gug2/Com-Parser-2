@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Com_Parser_2
 {
-    class AsyncDataLogging : IDisposable
+    class DataLogging : IDisposable
     {
         private const int FLUSH_BUFFER_SIZE = 1024; //1kb
         private readonly Stream stream;
         private int bufferSize;
 
-        public AsyncDataLogging(string logPath)
+        public DataLogging(string logPath)
         {
             try
             {
@@ -42,7 +39,6 @@ namespace Com_Parser_2
             if (bufferSize >= FLUSH_BUFFER_SIZE)
             {
                 stream.Flush();
-                Console.WriteLine("сохранение... " + "," + Process.GetCurrentProcess().Threads.Count);
                 bufferSize -= FLUSH_BUFFER_SIZE;
             }
         }

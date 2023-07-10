@@ -9,19 +9,26 @@ namespace Com_Parser_2_client
     {
         public byte[] StartMarkPattern { get; }
         public bool ValidateByChecksum { get; }
+        public int ChecksumPosition { get; }
         public int PacketSize { get; }
 
         private readonly Assembly assembly;
+        private readonly Type type;
 
-        public PacketFormat(UserScript script)
+        public PacketFormat(UserScript script) : this(script.AssemblyPath)
+        {
+
+        }
+
+        public PacketFormat(string scriptPath)
         {
             try
             {
-                assembly = Assembly.LoadFrom(script.AssemblyPath);
+                assembly = Assembly.LoadFrom(scriptPath);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Ошибка загрузки скрипта {0}.", script.AssemblyPath);
+                Console.WriteLine("Ошибка загрузки скрипта {0}.", scriptPath);
                 Console.WriteLine(e.ToString());
                 return;
             }
@@ -29,7 +36,14 @@ namespace Com_Parser_2_client
             StartMarkPattern = GetPacketProperty<byte[]>("StartMarkPattern");
             ValidateByChecksum = GetPacketProperty<bool>("ValidateByChecksum");
             object inputStruct = GetInputStruct();
-            PacketSize = inputStruct == null ? 0 : Marshal.SizeOf(inputStruct);
+            PacketSize = Marshal.SizeOf(inputStruct);
+            type = inputStruct.GetType();
+
+            ChecksumPosition = GetPacketProperty<int>("ChecksumPosition");
+            if (ChecksumPosition == 0)
+            {
+                ChecksumPosition = PacketSize - 1;
+            }
         }
 
         private T GetPacketProperty<T>(string propertyName)
@@ -88,32 +102,7 @@ namespace Com_Parser_2_client
             return args[1];
         }
 
-        private byte[] MarshalSerialize(object target)
-        {
-            int size = Marshal.SizeOf(target);
-            byte[] array = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(target, ptr, true);
-            Marshal.Copy(ptr, array, 0, size);
-            Marshal.FreeHGlobal(ptr);
-            return array;
-        }
-
-        private object MarshalDeserialize(Type type)
-        {
-            int size = Marshal.SizeOf(type);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-
-            byte[] source = new byte[size];
-            Marshal.Copy(source, 0, ptr, size);
-
-            object structure = Marshal.PtrToStructure(ptr, type);
-            Marshal.FreeHGlobal(ptr);
-
-            return structure;
-        }
-
-        public static object MarshalDeserializeByArray(Type type, byte[] array)
+        public object MarshalDeserialize(byte[] array)
         {
             int size = Marshal.SizeOf(type);
             IntPtr ptr = Marshal.AllocHGlobal(size);

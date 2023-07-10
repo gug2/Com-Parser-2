@@ -1,9 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Com_Parser_2_client
 {
@@ -12,12 +12,10 @@ namespace Com_Parser_2_client
         public static StatusLogging StatusLogging;
 
         private NetTransferLogic netTransferLogic;
-        private Stream netStream;
         private DisplayLogic displayLogic;
+        private StreamPacketParser chunkParser;
         private string fileForParse;
-
-        int last;
-        byte[] chunkBuffer = new byte[DisplayLogic.PW_CHUNK_SIZE];
+        private readonly Dictionary<string, PacketFormat> LoadedFormats = new Dictionary<string, PacketFormat>();
 
         public ClientForm()
         {
@@ -41,16 +39,8 @@ namespace Com_Parser_2_client
             };
             netTransferLogic.ServerDisconnecting += (o, a) =>
             {
-                byte[] flushed = new byte[last];
-                netStream.Seek(-flushed.Length, SeekOrigin.Current);
-                netStream.Read(flushed, 0, flushed.Length);
-                displayLogic.FlushParsingStream(ParseStreamWorker, flushed);
+                chunkParser.FlushParser();
                 Invoke(new EventHandler(NetTransferLogicServer_Disconnecting), o, a);
-            };
-
-            ParseStreamWorker.DoWork += (o, a) =>
-            {
-                displayLogic.DoWork(o, a);
             };
         }
 
@@ -83,17 +73,12 @@ namespace Com_Parser_2_client
 
         private void NetTransferLogic_PacketReceived(object sender, object[] e)
         {
-            netStream.Write((byte[])e[0], 0, (int)e[1]);
-            last += (int)e[1];
-
-            if (last >= DisplayLogic.PW_CHUNK_SIZE)
+            if (chunkParser == null)
             {
-                netStream.Seek(-last, SeekOrigin.Current);
-                netStream.Read(chunkBuffer, 0, chunkBuffer.Length);
-                last -= DisplayLogic.PW_CHUNK_SIZE;
-                netStream.Seek(last, SeekOrigin.Current);
-                displayLogic.ScheduleParsingChunk(ParseStreamWorker, chunkBuffer);
+                return;
             }
+
+            chunkParser.ScheduleChunk((byte[])e[0], (int)e[1]);
         }
 
         private void ClientForm_Layout(object sender, LayoutEventArgs e)
@@ -250,8 +235,14 @@ namespace Com_Parser_2_client
                         // загрузка скрипта
                         PacketFormat format = new PacketFormat(script);
                         displayLogic.Load(format);
-                        netStream = new MemoryStream();
-                        displayLogic.InitParsingStream();
+                        LoadedFormats.Add(script.AssemblyPath, format);
+                        chunkParser = new StreamPacketParser(ParseStreamWorker, displayLogic, format);
+
+                        Format_TS.GetCurrentParent().Items.Add(script.AssemblyPath, null, (obj, args) =>
+                        {
+                            ToolStripItem ts = obj as ToolStripItem;
+                            displayLogic.Load(LoadedFormats[ts.Text]);
+                        });
                     }
                 }
             }
