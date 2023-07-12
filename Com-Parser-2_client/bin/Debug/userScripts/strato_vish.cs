@@ -104,7 +104,7 @@ public class Script
 			pt_dec_ms56temp = i.ms56temp,
 			epsData = i.epsData,
 			pt_dec_heaterState = i.heaterState,
-			pp_vbat_plot9 = i.vbat
+			pp_vbat_plot9 = i.vbat,
 			zeros = i.zeros,
 			gps = i.gps
 		};

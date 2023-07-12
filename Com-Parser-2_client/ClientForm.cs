@@ -4,6 +4,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using GMap.NET.MapProviders;
+using GMap.NET.WindowsForms;
 
 namespace Com_Parser_2_client
 {
@@ -47,18 +49,6 @@ namespace Com_Parser_2_client
         private void ClientForm_Load(object sender, EventArgs e)
         {
             displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel);
-
-            RemoteAddress.TextValidator((text) =>
-            {
-                bool flag = VerifyRemoteAddress(RemoteAddress, text);
-
-                if (!flag)
-                {
-                    StatusLogging.Error("Некорректный формат! Адрес должен находиться в пределах от 0.0.0.0 до 255.255.255.255");
-                }
-
-                return flag;
-            });
         }
 
         private void NetRxCountUpdating(object sender, int[] e)
@@ -81,29 +71,17 @@ namespace Com_Parser_2_client
             chunkParser.ScheduleChunk((byte[])e[0], (int)e[1]);
         }
 
-        private void ClientForm_Layout(object sender, LayoutEventArgs e)
-        {
-            ConnectToRemote.Enabled = CheckRemoteIP();
-        }
-
-        private bool CheckRemoteIP()
-        {
-            return RemoteAddress.MaskCompleted && RemotePort.MaskCompleted;
-        }
-
         private async void ConnectRemote(object sender, EventArgs e)
         {
-            if (!CheckRemoteIP())
+            if (!ipTextBox1.ValidState)
             {
+                StatusLogging.Error("Недопустимый формат адреса.");
                 return;
             }
 
-            string address = TrimRemoteAddress(RemoteAddress, false);
-            int port = Convert.ToInt32(RemotePort.Text);
-
             try
             {
-                await netTransferLogic.Connect(address, port);
+                await netTransferLogic.Connect(ipTextBox1.Value, Convert.ToUInt16(RemotePort.Text));
 
                 ConnectToRemote.Click -= ConnectToRemote_Click;
                 ConnectToRemote.Click += DisconnectRemote;
@@ -131,90 +109,6 @@ namespace Com_Parser_2_client
         private void ConnectToRemote_Click(object sender, EventArgs e)
         {
             ConnectRemote(sender, e);
-        }
-
-        private void RemotePort_TextChanged(object sender, EventArgs e)
-        {
-            ConnectToRemote.Enabled = CheckRemoteIP();
-        }
-
-        private void RemoteAddress_Validated(object sender, EventArgs e)
-        {
-            RemoteAddress.Text = TrimRemoteAddress(RemoteAddress);
-
-            ConnectToRemote.Enabled = CheckRemoteIP();
-        }
-
-        private string TrimRemoteAddress(NullableMaskedTextBox textBox, bool shouldPadCell = true)
-        {
-            string[] cells = textBox.Text.Split(textBox.Delimiter);
-
-            int cellSize;
-            for (int i = 0; i < cells.Length; i++)
-            {
-                if (!shouldPadCell)
-                {
-                    cells[i] = cells[i].Trim(new char[] { textBox.PromptChar, ' ' });
-                }
-
-                cellSize = cells[i].Length;
-
-                // удаляем незначащие нули, если имеются
-                cells[i] = TrimExtraZeros(cells[i], textBox.PromptChar);
-
-                // заполняем пустое место, если необходимо
-                if (shouldPadCell && cells[i].Length < cellSize)
-                {
-                    cells[i] = cells[i].PadRight(cellSize, textBox.PromptChar);
-                }
-            }
-
-            return String.Join(textBox.Delimiter.ToString(), cells);
-        }
-
-        private string TrimExtraZeros(string s, char promptChar)
-        {
-            int k = 0;
-            while (k < s.Length - 1 && s[k] == '0' && s[k + 1] != promptChar)
-            {
-                k++;
-            }
-
-            return s.Remove(0, k);
-        }
-
-        private bool VerifyRemoteAddress(NullableMaskedTextBox textBox, string address)
-        {
-            string[] cells = address.Split(textBox.Delimiter);
-
-            if (cells.Length != 4)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < cells.Length; i++)
-            {
-                cells[i] = cells[i].Trim(new char[] { textBox.PromptChar, ' ' });
-
-                if (cells[i].Length == 0)
-                {
-                    return false;
-                }
-
-                if (!int.TryParse(cells[i], out int result))
-                {
-                    return false;
-                }
-                else
-                {
-                    if (result < 0 || result > 255)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         private void Format_TS_Click(object sender, EventArgs e)
