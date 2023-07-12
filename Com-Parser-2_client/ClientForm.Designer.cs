@@ -33,6 +33,7 @@ namespace Com_Parser_2_client
             System.Windows.Forms.ToolStripMenuItem Font_TS;
             System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
             System.Windows.Forms.GroupBox ParsedFileGroup;
+            System.Windows.Forms.Label label3;
             System.Windows.Forms.GroupBox RemoteNodeGroup;
             System.Windows.Forms.Label label2;
             System.Windows.Forms.Label label1;
@@ -42,6 +43,10 @@ namespace Com_Parser_2_client
             this.ParseFile = new System.Windows.Forms.Button();
             this.ParsedFilePath = new Com_Parser_2_client.LabelFormat();
             this.BrowseParsedFilePath = new System.Windows.Forms.Button();
+            this.PacketFormatInfo = new System.Windows.Forms.GroupBox();
+            this.PacketFormatData = new System.Windows.Forms.ComboBox();
+            this.PacketFormatPath = new Com_Parser_2_client.LabelFormat();
+            this.ipTextBox1 = new Com_Parser_2_client.IPTextBox();
             this.NetRxCount = new Com_Parser_2_client.LabelFormat();
             this.ConnectionStatus = new System.Windows.Forms.Label();
             this.ConnectToRemote = new System.Windows.Forms.Button();
@@ -49,23 +54,23 @@ namespace Com_Parser_2_client
             this.ParsedFileProgress = new System.Windows.Forms.ProgressBar();
             this.ChartFlowPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.TextFlowPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.gMapControl1 = new GMap.NET.WindowsForms.GMapControl();
             this.StatusBar = new System.Windows.Forms.Panel();
             this.StatusValue = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.RemoteReceiveWorker = new System.ComponentModel.BackgroundWorker();
             this.ParseStreamWorker = new System.ComponentModel.BackgroundWorker();
             this.ParserWorker = new System.ComponentModel.BackgroundWorker();
-            this.ipTextBox1 = new Com_Parser_2_client.IPTextBox();
             Datas_TS = new System.Windows.Forms.ToolStripMenuItem();
             Font_TS = new System.Windows.Forms.ToolStripMenuItem();
             flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             ParsedFileGroup = new System.Windows.Forms.GroupBox();
+            label3 = new System.Windows.Forms.Label();
             RemoteNodeGroup = new System.Windows.Forms.GroupBox();
             label2 = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             flowLayoutPanel1.SuspendLayout();
             ParsedFileGroup.SuspendLayout();
+            this.PacketFormatInfo.SuspendLayout();
             RemoteNodeGroup.SuspendLayout();
             this.StatusBar.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -114,11 +119,11 @@ namespace Com_Parser_2_client
             flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.BackColor = System.Drawing.SystemColors.Control;
             flowLayoutPanel1.Controls.Add(ParsedFileGroup);
+            flowLayoutPanel1.Controls.Add(this.PacketFormatInfo);
             flowLayoutPanel1.Controls.Add(RemoteNodeGroup);
             flowLayoutPanel1.Controls.Add(this.ParsedFileProgress);
             flowLayoutPanel1.Controls.Add(this.ChartFlowPanel);
             flowLayoutPanel1.Controls.Add(this.TextFlowPanel);
-            flowLayoutPanel1.Controls.Add(this.gMapControl1);
             flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             flowLayoutPanel1.Location = new System.Drawing.Point(0, 24);
@@ -172,6 +177,48 @@ namespace Com_Parser_2_client
             this.BrowseParsedFilePath.UseVisualStyleBackColor = true;
             this.BrowseParsedFilePath.Click += new System.EventHandler(this.BrowseParsedFilePath_Click);
             // 
+            // PacketFormatInfo
+            // 
+            this.PacketFormatInfo.Controls.Add(label3);
+            this.PacketFormatInfo.Controls.Add(this.PacketFormatData);
+            this.PacketFormatInfo.Controls.Add(this.PacketFormatPath);
+            this.PacketFormatInfo.Location = new System.Drawing.Point(3, 109);
+            this.PacketFormatInfo.Name = "PacketFormatInfo";
+            this.PacketFormatInfo.Size = new System.Drawing.Size(506, 122);
+            this.PacketFormatInfo.TabIndex = 10;
+            this.PacketFormatInfo.TabStop = false;
+            this.PacketFormatInfo.Text = "Формат пакета";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.ForeColor = System.Drawing.SystemColors.ControlText;
+            label3.Location = new System.Drawing.Point(10, 35);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(48, 13);
+            label3.TabIndex = 4;
+            label3.Text = "Данные";
+            // 
+            // PacketFormatData
+            // 
+            this.PacketFormatData.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PacketFormatData.FormattingEnabled = true;
+            this.PacketFormatData.Location = new System.Drawing.Point(64, 32);
+            this.PacketFormatData.Name = "PacketFormatData";
+            this.PacketFormatData.Size = new System.Drawing.Size(102, 21);
+            this.PacketFormatData.TabIndex = 4;
+            // 
+            // PacketFormatPath
+            // 
+            this.PacketFormatPath.AutoEllipsis = true;
+            this.PacketFormatPath.AutoSize = true;
+            this.PacketFormatPath.Format = "Файл: {0}";
+            this.PacketFormatPath.Location = new System.Drawing.Point(10, 16);
+            this.PacketFormatPath.Name = "PacketFormatPath";
+            this.PacketFormatPath.Size = new System.Drawing.Size(39, 13);
+            this.PacketFormatPath.TabIndex = 3;
+            this.PacketFormatPath.Text = "Файл:";
+            // 
             // RemoteNodeGroup
             // 
             RemoteNodeGroup.Controls.Add(this.ipTextBox1);
@@ -181,12 +228,20 @@ namespace Com_Parser_2_client
             RemoteNodeGroup.Controls.Add(this.ConnectionStatus);
             RemoteNodeGroup.Controls.Add(this.ConnectToRemote);
             RemoteNodeGroup.Controls.Add(this.RemotePort);
-            RemoteNodeGroup.Location = new System.Drawing.Point(3, 109);
+            RemoteNodeGroup.Location = new System.Drawing.Point(3, 237);
             RemoteNodeGroup.Name = "RemoteNodeGroup";
             RemoteNodeGroup.Size = new System.Drawing.Size(506, 84);
             RemoteNodeGroup.TabIndex = 7;
             RemoteNodeGroup.TabStop = false;
             RemoteNodeGroup.Text = "Удаленный узел";
+            // 
+            // ipTextBox1
+            // 
+            this.ipTextBox1.Location = new System.Drawing.Point(54, 22);
+            this.ipTextBox1.Name = "ipTextBox1";
+            this.ipTextBox1.Size = new System.Drawing.Size(143, 20);
+            this.ipTextBox1.TabIndex = 3;
+            this.ipTextBox1.Value = "127.0.0.1";
             // 
             // label2
             // 
@@ -251,7 +306,7 @@ namespace Com_Parser_2_client
             // 
             // ParsedFileProgress
             // 
-            this.ParsedFileProgress.Location = new System.Drawing.Point(3, 199);
+            this.ParsedFileProgress.Location = new System.Drawing.Point(3, 327);
             this.ParsedFileProgress.Name = "ParsedFileProgress";
             this.ParsedFileProgress.Size = new System.Drawing.Size(249, 23);
             this.ParsedFileProgress.Step = 1;
@@ -260,7 +315,7 @@ namespace Com_Parser_2_client
             // ChartFlowPanel
             // 
             this.ChartFlowPanel.AutoSize = true;
-            this.ChartFlowPanel.Location = new System.Drawing.Point(3, 228);
+            this.ChartFlowPanel.Location = new System.Drawing.Point(3, 356);
             this.ChartFlowPanel.MinimumSize = new System.Drawing.Size(100, 100);
             this.ChartFlowPanel.Name = "ChartFlowPanel";
             this.ChartFlowPanel.Size = new System.Drawing.Size(100, 100);
@@ -270,37 +325,11 @@ namespace Com_Parser_2_client
             // 
             this.TextFlowPanel.AutoSize = true;
             this.TextFlowPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.TextFlowPanel.Location = new System.Drawing.Point(3, 334);
+            this.TextFlowPanel.Location = new System.Drawing.Point(3, 462);
             this.TextFlowPanel.MinimumSize = new System.Drawing.Size(100, 100);
             this.TextFlowPanel.Name = "TextFlowPanel";
             this.TextFlowPanel.Size = new System.Drawing.Size(100, 100);
             this.TextFlowPanel.TabIndex = 5;
-            // 
-            // gMapControl1
-            // 
-            this.gMapControl1.Bearing = 0F;
-            this.gMapControl1.CanDragMap = true;
-            this.gMapControl1.EmptyTileColor = System.Drawing.Color.Navy;
-            this.gMapControl1.GrayScaleMode = false;
-            this.gMapControl1.HelperLineOption = GMap.NET.WindowsForms.HelperLineOptions.DontShow;
-            this.gMapControl1.LevelsKeepInMemory = 5;
-            this.gMapControl1.Location = new System.Drawing.Point(3, 440);
-            this.gMapControl1.MarkersEnabled = true;
-            this.gMapControl1.MaxZoom = 18;
-            this.gMapControl1.MinZoom = 3;
-            this.gMapControl1.MouseWheelZoomEnabled = true;
-            this.gMapControl1.MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionAndCenter;
-            this.gMapControl1.Name = "gMapControl1";
-            this.gMapControl1.NegativeMode = false;
-            this.gMapControl1.PolygonsEnabled = true;
-            this.gMapControl1.RetryLoadTile = 0;
-            this.gMapControl1.RoutesEnabled = true;
-            this.gMapControl1.ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer;
-            this.gMapControl1.SelectedAreaFillColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(65)))), ((int)(((byte)(105)))), ((int)(((byte)(225)))));
-            this.gMapControl1.ShowTileGridLines = false;
-            this.gMapControl1.Size = new System.Drawing.Size(500, 193);
-            this.gMapControl1.TabIndex = 9;
-            this.gMapControl1.Zoom = 0D;
             // 
             // StatusBar
             // 
@@ -348,14 +377,6 @@ namespace Com_Parser_2_client
             // 
             this.ParserWorker.WorkerReportsProgress = true;
             // 
-            // ipTextBox1
-            // 
-            this.ipTextBox1.Location = new System.Drawing.Point(54, 22);
-            this.ipTextBox1.Name = "ipTextBox1";
-            this.ipTextBox1.Size = new System.Drawing.Size(143, 20);
-            this.ipTextBox1.TabIndex = 3;
-            this.ipTextBox1.Value = "127.0.0.1";
-            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -370,6 +391,8 @@ namespace Com_Parser_2_client
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
             ParsedFileGroup.ResumeLayout(false);
+            this.PacketFormatInfo.ResumeLayout(false);
+            this.PacketFormatInfo.PerformLayout();
             RemoteNodeGroup.ResumeLayout(false);
             RemoteNodeGroup.PerformLayout();
             this.StatusBar.ResumeLayout(false);
@@ -399,9 +422,11 @@ namespace Com_Parser_2_client
         private System.Windows.Forms.Button ParseFile;
         private System.ComponentModel.BackgroundWorker ParseStreamWorker;
         private System.ComponentModel.BackgroundWorker ParserWorker;
-        private GMap.NET.WindowsForms.GMapControl gMapControl1;
         private System.Windows.Forms.Panel StatusBar;
         private IPTextBox ipTextBox1;
+        private System.Windows.Forms.GroupBox PacketFormatInfo;
+        private LabelFormat PacketFormatPath;
+        private System.Windows.Forms.ComboBox PacketFormatData;
     }
 }
 

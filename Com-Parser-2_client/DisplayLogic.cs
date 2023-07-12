@@ -14,6 +14,7 @@ namespace Com_Parser_2_client
     class DisplayLogic
     {
         private readonly FlowLayoutPanel chartsPanel, textPanel;
+        private readonly ComboBox packetFormatData;
         private readonly Dictionary<string, Chart> Charts = new Dictionary<string, Chart>();
         private readonly Dictionary<string, Label> Texts = new Dictionary<string, Label>();
         private PacketFormat PacketFormat;
@@ -25,10 +26,11 @@ namespace Com_Parser_2_client
         private delegate void DisplayToChartHandler(string name, object x, object y);
         private delegate void DisplayToTextHandler(string name, object value);
 
-        public DisplayLogic(FlowLayoutPanel chartsPanel, FlowLayoutPanel textPanel)
+        public DisplayLogic(FlowLayoutPanel chartsPanel, FlowLayoutPanel textPanel, ComboBox comboBox)
         {
             this.chartsPanel = chartsPanel;
             this.textPanel = textPanel;
+            packetFormatData = comboBox;
         }
 
         public void HandlePacket(PacketParser parser, object outStruct)
@@ -164,8 +166,13 @@ namespace Com_Parser_2_client
 
             List<DataObject> dataObjects = outputStruct.GetType().GetFields().Select(info => DataObject.ConvertField(info)).ToList();
 
+            packetFormatData.Items.Clear();
+            int maxWidth = 0;
             foreach (DataObject obj in dataObjects)
             {
+                packetFormatData.Items.Add(obj.Name);
+                maxWidth = Math.Max(maxWidth, TextRenderer.MeasureText(obj.Name, packetFormatData.Font).Width);
+
                 if (obj.Name.Contains("time"))
                 {
                     Time = obj;
@@ -183,6 +190,8 @@ namespace Com_Parser_2_client
 
                 Console.WriteLine("Загружен {0}", obj);
             }
+            packetFormatData.SelectedIndex = 0;
+            packetFormatData.Width = maxWidth + 18;
         }
 
         public void ParseBinFile(BackgroundWorker worker, string path)

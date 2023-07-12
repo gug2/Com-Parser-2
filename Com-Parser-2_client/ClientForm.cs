@@ -48,7 +48,7 @@ namespace Com_Parser_2_client
 
         private void ClientForm_Load(object sender, EventArgs e)
         {
-            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel);
+            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel, PacketFormatData);
         }
 
         private void NetRxCountUpdating(object sender, int[] e)
