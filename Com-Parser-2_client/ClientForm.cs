@@ -1,223 +1,144 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Windows.Forms;
-using GMap.NET.MapProviders;
-using GMap.NET.WindowsForms;
 
 namespace Com_Parser_2_client
 {
     public partial class ClientForm : Form
     {
-        public static StatusLogging StatusLogging;
-
-        private NetTransferLogic netTransferLogic;
-        private DisplayLogic displayLogic;
-        private StreamPacketParser chunkParser;
-        private string fileForParse;
-        private readonly Dictionary<string, PacketFormat> LoadedFormats = new Dictionary<string, PacketFormat>();
-
+        public readonly Dictionary<Type, Form> SubForms = new Dictionary<Type, Form>();
+        private readonly List<ChartDisplayForm> DisplayedCharts = new List<ChartDisplayForm>();
+        
         public ClientForm()
         {
             InitializeComponent();
-            StatusLogging = StatusLogging.From(StatusValue);
-
-            ParserWorker.ProgressChanged += (o, a) =>
-            {
-                ParsedFileProgress.Value = a.ProgressPercentage;
-            };
-            ParserWorker.DoWork += (o, a) =>
-            {
-                displayLogic.ParseBinFile(ParserWorker, fileForParse);
-                NetRxCount.Invoke(new EventHandler<int[]>(NetRxCountUpdating), NetRxCount, new int[] { displayLogic.SuccessPackets, displayLogic.BrokenPackets });
-            };
-
-            netTransferLogic = new NetTransferLogic(RemoteReceiveWorker);
-            netTransferLogic.PacketReceived += (o, a) =>
-            {
-                NetTransferLogic_PacketReceived(o, a);
-            };
-            netTransferLogic.ServerDisconnecting += (o, a) =>
-            {
-                chunkParser.FlushParser();
-                Invoke(new EventHandler(NetTransferLogicServer_Disconnecting), o, a);
-            };
         }
 
-        private void ClientForm_Load(object sender, EventArgs e)
+        public void ClearDropDownItems()
         {
-            displayLogic = new DisplayLogic(ChartFlowPanel, TextFlowPanel, PacketFormatData);
+            Charts_TS_Group.DropDownItems.Clear();
         }
 
-        private void NetRxCountUpdating(object sender, int[] e)
+        public void ClearCharts()
         {
-            NetRxCount.SetFormatArgs(e[0], e[1]);
-        }
-
-        private void NetTransferLogicServer_Disconnecting(object sender, EventArgs e)
-        {
-            DisconnectRemote(sender, e);
-        }
-
-        private void NetTransferLogic_PacketReceived(object sender, object[] e)
-        {
-            if (chunkParser == null)
+            foreach (var chart in DisplayedCharts)
             {
-                return;
-            }
-
-            chunkParser.ScheduleChunk((byte[])e[0], (int)e[1]);
-        }
-
-        private async void ConnectRemote(object sender, EventArgs e)
-        {
-            if (!ipTextBox1.ValidState)
-            {
-                StatusLogging.Error("Недопустимый формат адреса.");
-                return;
-            }
-
-            try
-            {
-                await netTransferLogic.Connect(ipTextBox1.Value, Convert.ToUInt16(RemotePort.Text));
-
-                ConnectToRemote.Click -= ConnectToRemote_Click;
-                ConnectToRemote.Click += DisconnectRemote;
-                ConnectToRemote.Text = "Отключить";
-                ConnectionStatus.Text = "Соединено";
-                ConnectionStatus.ForeColor = Color.Green;
-            }
-            catch (Exception ex)
-            {
-                StatusLogging.Error(ex.ToString());
+                chart.Clear();
             }
         }
 
-        private void DisconnectRemote(object sender, EventArgs e)
+        public ChartDisplayForm AddChart(DataObject xDataObject, DataObject yDataObject)
         {
-            netTransferLogic.Disconnect();
-
-            ConnectToRemote.Click -= DisconnectRemote;
-            ConnectToRemote.Click += ConnectToRemote_Click;
-            ConnectToRemote.Text = "Подключить";
-            ConnectionStatus.Text = "Не подключено";
-            ConnectionStatus.ForeColor = Color.Red;
-        }
-
-        private void ConnectToRemote_Click(object sender, EventArgs e)
-        {
-            ConnectRemote(sender, e);
-        }
-
-        private void Format_TS_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog dialog = new OpenFileDialog())
+            if (Charts_TS_Group.DropDownItems.ContainsKey(yDataObject.Name))
             {
-                dialog.CheckPathExists = true;
-                dialog.CheckFileExists = true;
-                dialog.Multiselect = false;
-                dialog.Filter = "Форматы данных (*.cs)|*.cs";
-                
-                if (dialog.ShowDialog() == DialogResult.OK)
+                return null;
+            }
+
+            bool hasXAxis = xDataObject != null && xDataObject != yDataObject;
+
+            ChartDisplayForm chart = new ChartDisplayForm(hasXAxis)
+            {
+                MdiParent = this,
+                MinimizeBox = false
+            };
+
+            chart.FormClosing += SubForm_Closing;
+            chart.SetTitle(yDataObject.Name);
+
+            if (hasXAxis)
+            {
+                chart.SetAxis(xDataObject.Name, yDataObject.Name);
+            }
+            else
+            {
+                chart.SetAxis(yDataObject.Name);
+            }
+
+            Charts_TS_Group.DropDownItems.Add(yDataObject.Name, null, (obj, args) =>
+            {
+                if (chart.Visible)
                 {
-                    UserScript script = new UserScript(dialog.FileName);
-
-                    if (script.Compile())
-                    {
-                        // загрузка скрипта
-                        PacketFormat format = new PacketFormat(script);
-                        displayLogic.Load(format);
-                        LoadedFormats.Add(script.AssemblyPath, format);
-                        chunkParser = new StreamPacketParser(ParseStreamWorker, displayLogic, format);
-
-                        Format_TS.GetCurrentParent().Items.Add(script.AssemblyPath, null, (obj, args) =>
-                        {
-                            ToolStripItem ts = obj as ToolStripItem;
-                            displayLogic.Load(LoadedFormats[ts.Text]);
-                        });
-                    }
+                    chart.Focus();
                 }
-            }
-        }
-
-        private void BrowseParsedFilePath_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog dialog = new OpenFileDialog())
-            {
-                dialog.CheckPathExists = true;
-                dialog.CheckFileExists = true;
-                dialog.Multiselect = false;
-                dialog.Filter = "Двоичные данные (*.txt;*.bin;*.dat;*.log)|*.txt;*.bin;*.dat;*.log;";
-
-                if (dialog.ShowDialog() == DialogResult.OK)
+                else
                 {
-                    fileForParse = dialog.FileName;
-                    ParsedFilePath.SetFormatArgs(dialog.FileName);
-
-                    ParseFile.Enabled = !string.IsNullOrEmpty(fileForParse);
+                    chart.Show();
                 }
+            });
+
+            DisplayedCharts.Add(chart);
+
+            return chart;
+        }
+
+        private Form CreateSubForm(Type type, params object[] args)
+        {
+            if (SubForms.ContainsKey(type))
+            {
+                return null;
+            }
+
+            if (Activator.CreateInstance(type, args) is Form form)
+            {
+                form.MdiParent = this;
+                form.MinimizeBox = false;
+
+                form.FormClosing += SubForm_Closing;
+
+                SubForms.Add(type, form);
+                return form;
+            }
+
+            return null;
+        }
+
+        private void ShowSubForm(Type type)
+        {
+            if (!SubForms.ContainsKey(type))
+            {
+                CreateSubForm(type);
+            }
+
+            if (SubForms[type].Visible)
+            {
+                SubForms[type].Focus();
+            }
+            else
+            {
+                SubForms[type].Show();
             }
         }
 
-        private void TextLabel_TS_Click(object sender, EventArgs e)
+        private void SubForm_Closing(object sender, FormClosingEventArgs e)
         {
-            FontDialog dialog = new FontDialog()
-            {
-                ShowEffects = true,
-                AllowSimulations = true
-            };
-
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                TextFlowPanel.Font = dialog.Font;
-            }
+            Form form = sender as Form;
+            form.Hide();
+            e.Cancel = e.CloseReason != CloseReason.MdiFormClosing;
         }
 
-        private void TextValue_TS_Click(object sender, EventArgs e)
+        private void Parser_TS_Click(object sender, EventArgs e)
         {
-            FontDialog dialog = new FontDialog()
-            {
-                ShowEffects = true,
-                AllowSimulations = true
-            };
-
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                foreach (Control c in TextFlowPanel.Controls)
-                {
-                    if (c is Label l && l.Name == "value")
-                    {
-                        l.Font = dialog.Font;
-                    }
-                }
-            }
+            ShowSubForm(typeof(ParserForm));
         }
 
-        private void flowLayoutPanel1_ClientSizeChanged(object sender, EventArgs e)
+        private void Map_TS_Click(object sender, EventArgs e)
         {
-            FlowLayoutPanel flow = sender as FlowLayoutPanel;
-
-            foreach (Control c in flow.Controls)
-            {
-                c.Width = flow.ClientSize.Width - c.Left * 2;
-            }
+            ShowSubForm(typeof(MapForm));
         }
 
-        private void ParsedFileGroup_ClientSizeChanged(object sender, EventArgs e)
+        private void ViewCascade_TS_Click(object sender, EventArgs e)
         {
-            Control c = sender as Control;
-
-            ParsedFilePath.Width = c.ClientSize.Width - ParsedFilePath.Left * 2;
+            LayoutMdi(MdiLayout.Cascade);
         }
 
-        private void ParseFile_Click(object sender, EventArgs e)
+        private void ViewRow_TS_Click(object sender, EventArgs e)
         {
-            if (!ParserWorker.IsBusy)
-            {
-                ParserWorker.RunWorkerAsync();
-            }
+            LayoutMdi(MdiLayout.TileHorizontal);
+        }
+
+        private void ViewStack_TS_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.TileVertical);
         }
     }
 }

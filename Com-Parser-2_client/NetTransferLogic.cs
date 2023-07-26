@@ -2,15 +2,18 @@
 using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Com_Parser_2_client
 {
     class NetTransferLogic
     {
+        private const int NETWORK_TIMEOUT = 100;
         private readonly BackgroundWorker Worker;
         private TcpClient tcpClient;
 
+        public event EventHandler ServerConnecting;
         public event EventHandler<object[]> PacketReceived;
         public event EventHandler ServerDisconnecting;
 
@@ -28,12 +31,7 @@ namespace Com_Parser_2_client
             {
                 if (Worker.CancellationPending)
                 {
-                    if (ServerDisconnecting != null)
-                    {
-                        ServerDisconnecting.Invoke(tcpClient, EventArgs.Empty);
-                    }
-
-                    e.Cancel = true;
+                    StopWorker(e);
                     break;
                 }
 
@@ -56,17 +54,24 @@ namespace Com_Parser_2_client
                 }
                 catch (Exception ex)
                 {
-                    ClientForm.StatusLogging.Error(String.Format("Сервер принудительно закрыл соединение: {0}", ex.ToString()));
+                    ParserForm.StatusLogging.Error(String.Format("Сервер принудительно закрыл соединение: {0}", ex.ToString()));
 
-                    if (ServerDisconnecting != null)
-                    {
-                        ServerDisconnecting.Invoke(tcpClient, EventArgs.Empty);
-                    }
-
-                    e.Cancel = true;
+                    StopWorker(e);
                     break;
                 }
+
+                Thread.Sleep(NETWORK_TIMEOUT);
             }
+        }
+
+        private void StopWorker(DoWorkEventArgs e)
+        {
+            if (ServerDisconnecting != null)
+            {
+                ServerDisconnecting.Invoke(tcpClient, EventArgs.Empty);
+            }
+
+            e.Cancel = true;
         }
 
         private bool IsSocketConnected(Socket socket)
@@ -74,24 +79,46 @@ namespace Com_Parser_2_client
             return !(socket.Poll(1000, SelectMode.SelectRead) && socket.Available == 0);
         }
 
-        public async Task Connect(string host, int port)
+        public async Task<bool> Connect(string host, int port)
         {
             if (tcpClient != null && tcpClient.Connected)
             {
-                return;
+                return false;
             }
 
             if (IPAddress.TryParse(host, out IPAddress address))
             {
                 tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync(address, port);
 
-                if (tcpClient.Connected)
+                try
                 {
-                    ClientForm.StatusLogging.Info(String.Format("Подключились к узлу {0}.", tcpClient.Client.RemoteEndPoint));
+                    await tcpClient.ConnectAsync(address, port);
+                }
+                catch (Exception e)
+                {
+                    ParserForm.StatusLogging.Error(e.ToString());
+                    return false;
+                }
+
+                if (!tcpClient.Connected)
+                {
+                    return false;
+                }
+
+                if (ServerConnecting != null)
+                {
+                    ServerConnecting.Invoke(tcpClient, EventArgs.Empty);
+                }
+
+                ParserForm.StatusLogging.Info(String.Format("Подключились к узлу {0}.", tcpClient.Client.RemoteEndPoint));
+
+                if (!Worker.IsBusy)
+                {
                     Worker.RunWorkerAsync();
                 }
             }
+
+            return true;
         }
 
         public void Disconnect()
@@ -107,6 +134,8 @@ namespace Com_Parser_2_client
             }
 
             Worker.CancelAsync();
+
+            while (Worker.IsBusy);
 
             tcpClient.Close();
             tcpClient.Dispose();

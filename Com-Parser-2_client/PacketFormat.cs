@@ -1,34 +1,42 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Com_Parser_2_client
 {
-    class PacketFormat
+    public class PacketFormat
     {
+        public bool ScriptCompiled { get; }
         public byte[] StartMarkPattern { get; }
         public bool ValidateByChecksum { get; }
         public int ChecksumPosition { get; }
         public int PacketSize { get; }
 
+#warning сделать коллекцию неизменяемой извне
+        private List<DataObject> DataObjects { set; get; }
+
         private readonly Assembly assembly;
         private readonly Type type;
 
-        public PacketFormat(UserScript script) : this(script.AssemblyPath)
-        {
-
-        }
-
         public PacketFormat(string scriptPath)
         {
+            UserScript script = new UserScript(scriptPath);
+            ScriptCompiled = script.Compile();
+
+            if (!ScriptCompiled)
+            {
+                return;
+            }
+
             try
             {
-                assembly = Assembly.LoadFrom(scriptPath);
+                assembly = Assembly.LoadFrom(script.AssemblyPath);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Ошибка загрузки скрипта {0}.", scriptPath);
+                Console.WriteLine("Ошибка загрузки скрипта {0}.", script.AssemblyPath);
                 Console.WriteLine(e.ToString());
                 return;
             }
@@ -65,7 +73,7 @@ namespace Com_Parser_2_client
             return (T)info.GetValue(null);
         }
 
-        public object GetInputStruct()
+        private object GetInputStruct()
         {
             if (assembly == null)
             {
@@ -85,7 +93,7 @@ namespace Com_Parser_2_client
             return Activator.CreateInstance(inDataType);
         }
 
-        public object GetOutputStruct(object inputStruct)
+        private object GetOutputStruct(object inputStruct)
         {
             if (assembly == null)
             {
@@ -98,11 +106,31 @@ namespace Com_Parser_2_client
             object[] args = new object[] { inputStruct, outStruct };
 
             assembly.GetTypes()[0].GetMethod("ProcessData").Invoke(null, args);
-
+            
             return args[1];
         }
 
-        public object MarshalDeserialize(byte[] array)
+        public List<DataObject> GetOrCreateDataObjects()
+        {
+            if (DataObjects == null)
+            {
+                object o = GetOutputStruct(GetInputStruct());
+                DataObjects = o.GetType().GetFields().Select(field => DataObject.From(field, o)).ToList();
+            }
+            
+            return DataObjects;
+        }
+
+        public List<DataObject> ReadDataObjectsFrom(byte[] buffer)
+        {
+            object input = MarshalDeserialize(buffer);
+            object o = GetOutputStruct(input);
+            DataObjects = o.GetType().GetFields().Select(field => DataObject.From(field, o)).ToList();
+
+            return DataObjects;
+        }
+
+        private object MarshalDeserialize(byte[] array)
         {
             int size = Marshal.SizeOf(type);
             IntPtr ptr = Marshal.AllocHGlobal(size);

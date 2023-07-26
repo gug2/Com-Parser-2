@@ -29,7 +29,7 @@ namespace Com_Parser_2_client
 
             if (control.InvokeRequired)
             {
-                control.Invoke(new EventHandler((obj, args) =>
+                control.BeginInvoke(new EventHandler((obj, args) =>
                 {
                     ShowMessage(msg, Color.Red, logTime);
                 }));
@@ -46,7 +46,7 @@ namespace Com_Parser_2_client
 
             if (control.InvokeRequired)
             {
-                control.Invoke(new EventHandler((obj, args) =>
+                control.BeginInvoke(new EventHandler((obj, args) =>
                 {
                     ShowMessage(msg, Color.Green, logTime);
                 }));

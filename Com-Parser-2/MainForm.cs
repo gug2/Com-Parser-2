@@ -11,6 +11,7 @@ namespace Com_Parser_2
     public partial class MainForm : Form
     {
         private const string LOGFILE_EXTENSION = ".bin";
+        private readonly byte[] SERIAL_BUFFER = new byte[1024];
         private readonly List<int> SERIAL_SPEEDS = new List<int>() { 75, 110, 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 };
 
         public static StatusLogging StatusLogging;
@@ -21,6 +22,8 @@ namespace Com_Parser_2
         private int BytesPerSec;
         private int RxCount;
 
+        private readonly EventHandler<int> DataReceivedHandler;
+
         public MainForm()
         {
             InitializeComponent();
@@ -28,6 +31,12 @@ namespace Com_Parser_2
 
             portLogic.Opening += PortLogic_Opening;
             portLogic.Closing += PortLogic_Closing;
+
+            DataReceivedHandler += (obj, args) =>
+            {
+                SerialRxCount.SetFormatArgs(RxCount++);
+                BytesPerSec += args;
+            };
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -103,8 +112,21 @@ namespace Com_Parser_2
 
         private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            SerialPort port = sender as SerialPort;
+
+            if (port.BytesToRead < SERIAL_BUFFER.Length)
+            {
+                BeginInvoke(DataReceivedHandler, port.BytesToRead);
+
+                return;
+            }
+            else
+            {
+                port.Read(SERIAL_BUFFER, 0, SERIAL_BUFFER.Length);
+            }
+
             // обрабатывать искючения порта в случае закрытия/зависа порта
-            SerialPort port = (SerialPort)sender;
+            /*SerialPort port = (SerialPort)sender;
 
             byte[] b = new byte[port.BytesToRead];
 
@@ -117,7 +139,7 @@ namespace Com_Parser_2
             {
                 SerialRxCount.SetFormatArgs(RxCount++);
                 BytesPerSec += args;
-            }), this, b.Length);
+            }), this, b.Length);*/
         }
 
         private void ScanPorts()

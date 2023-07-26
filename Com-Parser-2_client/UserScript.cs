@@ -21,6 +21,8 @@ namespace Com_Parser_2_client
 
         public bool Compile(string outputAssemblyDir = "userScripts", bool KeepInTempDir = false)
         {
+            AssemblyPath = string.Empty;
+
             if (!File.Exists(sourcePath))
             {
                 Console.WriteLine("Ошибка компиляции! Файл скрипта не найден. Путь: \"{0}\"", Path.GetFullPath(sourcePath));
@@ -36,8 +38,8 @@ namespace Com_Parser_2_client
             if (elem != null)
             {
                 Console.WriteLine("Скрипт {0} уже загружен!", elem.FullName);
-                ClientForm.StatusLogging.Error(String.Format("Скрипт {0} уже загружен!", elem.FullName));
-                return false;
+                ParserForm.StatusLogging.Error(String.Format("Скрипт {0} уже загружен!", elem.FullName));
+                return true;
             }
 
             Console.WriteLine("Загрузка скрипта...");
@@ -74,12 +76,12 @@ namespace Com_Parser_2_client
                     sb.Append(error.ToString());
                 }
 
-                ClientForm.StatusLogging.Error(sb.ToString());
+                ParserForm.StatusLogging.Error(sb.ToString());
                 return false;
             }
 
             Console.WriteLine("Скрипт скомпилирован.");
-            ClientForm.StatusLogging.Info("Скрипт скомпилирован.");
+            ParserForm.StatusLogging.Info("Скрипт скомпилирован.");
 
             AssemblyPath = parameters.OutputAssembly;
 
